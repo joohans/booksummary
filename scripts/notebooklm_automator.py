@@ -30,8 +30,10 @@ _session_env = os.environ.get("NOTEBOOKLM_SESSION_FILE")
 SESSION_FILE = Path(_session_env) if _session_env else Path.home() / ".notebooklm_session.json"
 _profile_env = os.environ.get("NOTEBOOKLM_PROFILE_DIR")
 DEFAULT_PROFILE_DIR = Path(_profile_env) if _profile_env else Path.home() / ".notebooklm_chrome_profile"
-NOTEBOOKLM_URL = "https://notebooklm.google.com"
-MAX_WAIT_MINUTES = 35
+# 2026-08: NotebookLM → Gemini Notebook 리브랜딩, notebook.google.com으로 도메인 변경
+# 구 도메인 경유 시 로그인 재확인 플로우(accountchooser)로 빠지므로 신 도메인 직행 필수
+NOTEBOOKLM_URL = "https://notebook.google.com"
+MAX_WAIT_MINUTES = 60
 STATE_DIR = Path(__file__).parent.parent / ".pipeline_state"
 
 
@@ -297,6 +299,9 @@ async def _dismiss_welcome_dialog(page) -> None:
         clicked = await _js_find_and_click(page, "확인", "button")
         if not clicked:
             clicked = await _js_find_and_click(page, "Got it", "button")
+        if not clicked:
+            # Gemini Notebook 리브랜딩 안내 다이얼로그 (2026-08 확인)
+            clicked = await _js_find_and_click(page, "시작하기", "button")
         if clicked:
             print("   ✅ 환영 다이얼로그 닫음")
             await page.wait_for_timeout(1500)
@@ -1209,7 +1214,14 @@ async def create_notebooklm_video(
             print("\n1️⃣  NotebookLM 접속...")
             await page.goto(NOTEBOOKLM_URL, wait_until="load", timeout=60000)
 
+            # 무음 SSO 바운스(accounts.google.com 경유 후 복귀) 대기 — 즉시 판정 금지
+            for _ in range(10):
+                if "accounts.google.com" not in page.url:
+                    break
+                await page.wait_for_timeout(2000)
+
             if "accounts.google.com" in page.url:
+                await _screenshot(page, "session_expired")
                 print("❌ 세션 만료. --login 으로 재로그인하세요.")
                 return None
 

@@ -2,6 +2,31 @@
 
 ---
 
+## 2026-08-11
+
+### 3개월 공백 후 재개 — NotebookLM(Gemini Notebook) 리브랜딩 대응
+
+#### 배경
+- 마지막 업로드 2026-05-11 이후 3개월 공백. 시즌2 25화 「소년이 온다」(한강)부터 재개
+- **영문판(1DANG100)은 당분간 제작 중단** — 한글판만 제작·업로드
+- 회차 기준 정정: 나무위키 기준 시즌2 18~24화 업로드 완료 상태 (내부 CSV 번호가 1화씩 밀려 있었음)
+
+#### 변경 파일
+- `scripts/notebooklm_automator.py`:
+  - NotebookLM → **Gemini Notebook** 리브랜딩 대응: 접속 도메인 `notebooklm.google.com` → `notebook.google.com` (구 도메인 경유 시 로그인 재확인 플로우로 빠짐)
+  - 세션 만료 판정 전 무음 SSO 바운스 정착 대기(최대 20초) 추가 + 실패 시 스크린샷 저장
+  - 리브랜딩 안내 다이얼로그("시작하기" 버튼) 자동 닫기 추가
+  - `MAX_WAIT_MINUTES` 35 → 60 (비디오 생성 대기 상향)
+
+#### 신규 파일
+- `data/notebooklm_urls/소년이_온다_part1_ko.md` / `_part2_ko.md`: 시즌2 25화 Part별 NLM 소스 URL (원본 1부 LbO2ENARsl8 / 2부 p8QvVCd28Wg + 배경 자료)
+
+#### 운영 노트 (중요)
+- Google 세션 쿠키가 **브라우저 재시작 시 무효화**되는 현상 확인 (DBSC 기기 바인딩 추정). 정적 세션 파일(storage_state) 주입은 1회 사용 후 stale — stale 쿠키 재주입 시 살아있는 프로필 세션까지 덮어쓰므로 주의
+- 대응: 로그인~비디오 생성 전 과정을 브라우저 1회 실행으로 처리하는 원샷 방식 + `--disable-features=BoundSessionCredentials` 플래그 사용
+
+---
+
 ## 2026-04-09
 
 ### 코드 개선 및 신규 스크립트 추가
