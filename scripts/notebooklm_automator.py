@@ -909,9 +909,52 @@ async def _download_video(page, output_path: str) -> Optional[str]:
     return output_path
 
 
+async def _download_via_icon(page, output_path: str) -> Optional[str]:
+    """스튜디오 패널의 직접 ⬇ 아이콘 클릭 (Gemini Notebook 신 UI, 2026-08)
+
+    리브랜딩 후 다운로드가 ⋮ 메뉴에서 빠지고 공유/다운로드/⋮ 아이콘 행의
+    전용 버튼으로 이동함. 아이콘은 mat-icon innerText 'download'.
+    """
+    Path(output_path).parent.mkdir(parents=True, exist_ok=True)
+    try:
+        async with page.expect_download(timeout=60000) as dl_info:
+            clicked = await page.evaluate("""
+                (() => {
+                    const btns = document.querySelectorAll('button, [role="button"]');
+                    for (const b of btns) {
+                        const rect = b.getBoundingClientRect();
+                        if (rect.x < 800 || b.offsetParent === null) continue;
+                        const icon = b.querySelector('mat-icon, .material-icons, .google-symbols');
+                        const iconTxt = (icon?.innerText || '').trim();
+                        const label = (b.getAttribute('aria-label') || '').toLowerCase();
+                        if (iconTxt === 'download' || label.includes('다운로드') || label.includes('download')) {
+                            b.click();
+                            return 'dl-icon at x=' + Math.round(rect.x) + ',y=' + Math.round(rect.y);
+                        }
+                    }
+                    return null;
+                })()
+            """)
+            if not clicked:
+                raise RuntimeError("다운로드 아이콘 없음")
+            print(f"   ⬇️ 다운로드 아이콘 클릭: {clicked}")
+        dl = await dl_info.value
+        await dl.save_as(output_path)
+        print(f"   📥 다운로드 완료: {output_path}")
+        return output_path
+    except Exception as e:
+        print(f"   ⚠️ 직접 아이콘 다운로드 실패: {str(e)[:80]}")
+        return None
+
+
 async def _download_from_menu(page, output_path: str) -> Optional[str]:
     """비디오 항목의 ⋮ 메뉴 또는 플레이어에서 다운로드"""
     Path(output_path).parent.mkdir(parents=True, exist_ok=True)
+
+    # 전략 0 (신 UI): 동영상 개요 상세 패널의 직접 ⬇ 아이콘
+    result = await _download_via_icon(page, output_path)
+    if result:
+        return result
 
     # 전략 1: 비디오 항목의 ▶ 버튼을 클릭 → 플레이어 열기 → 플레이어 ... 메뉴에서 다운로드
     # (⋮ 메뉴 타겟팅이 어려우므로 플레이어 우선)

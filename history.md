@@ -21,6 +21,14 @@
 #### 신규 파일
 - `data/notebooklm_urls/소년이_온다_part1_ko.md` / `_part2_ko.md`: 시즌2 25화 Part별 NLM 소스 URL (원본 1부 LbO2ENARsl8 / 2부 p8QvVCd28Wg + 배경 자료)
 
+#### 시즌2 25화 「소년이 온다」 제작·업로드 (같은 날)
+- NLM Video Overview 2개 생성 (Part1 작가·5.18 배경 9:20 / Part2 작품 분석 7:51, jsong@cplabs.io 계정)
+- GPU 151에서 `Human_Acts_full_episode_ko.mp4` 렌더링 (17:12, 623MB)
+- 썸네일: GPU 150:9010 Flux.1-schnell (ComfyUI venv 재활용, 기존 9001은 MeloTTS 점유)
+- 업로드: https://www.youtube.com/watch?v=CKxgZBvMC90 (비공개, 2026-08-12 09:00Z 공개 예약)
+- 재생목록 [KOR] 일당백 책 소개 추가, ildangbaek_books.csv 갱신, uploaded_books.csv 1월 이후 누락 200행 백필
+- 추가 코드 수정: `notebooklm_automator.py` 신 UI ⬇ 아이콘 다운로드(`_download_via_icon`), `thumbnail_generator.py` health "ready" 허용 + 어절 단위 줄바꿈 + `--tag` 옵션
+
 #### 운영 노트 (중요)
 - Google 세션 쿠키가 **브라우저 재시작 시 무효화**되는 현상 확인 (DBSC 기기 바인딩 추정). 정적 세션 파일(storage_state) 주입은 1회 사용 후 stale — stale 쿠키 재주입 시 살아있는 프로필 세션까지 덮어쓰므로 주의
 - 대응: 로그인~비디오 생성 전 과정을 브라우저 1회 실행으로 처리하는 원샷 방식 + `--disable-features=BoundSessionCredentials` 플래그 사용
@@ -5277,3 +5285,11 @@
   - URL: https://www.youtube.com/watch?v=V1mXvdSJC7Q
 - [6] [1DANG100] Metamorphoses (Background · Infographics · Analysis)
   - URL: https://www.youtube.com/watch?v=eSBsXCVm-SM
+
+## 2026-08-11
+
+### YouTube 업로드 완료
+- 업로드된 책: Human_Acts_full_episode_ko
+- 업로드된 영상 수: 1개
+- [1] [일당백] 소년이 온다 (Human Acts · 배경지식·인포그래픽·책 분석)
+  - URL: https://www.youtube.com/watch?v=CKxgZBvMC90

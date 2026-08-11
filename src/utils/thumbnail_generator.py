@@ -84,6 +84,7 @@ def overlay_text(
     author: str,
     book_title: str,
     language: str,
+    tag: str | None = None,
 ) -> Image.Image:
     """PIL로 이미지 위에 텍스트 오버레이 — 크고 임팩트 있는 레이아웃"""
     W, H = img.size
@@ -137,20 +138,27 @@ def overlay_text(
         return bbox[2] - bbox[0]
 
     def wrap_text_by_width(text, font, max_w):
-        """너비 기준 텍스트 줄바꿈"""
-        words = list(text) if is_ko else text.split()
+        """너비 기준 텍스트 줄바꿈 — 명시적 \\n 존중, 어절(공백) 단위 우선 (한국어 중간 절단 방지)"""
         lines = []
-        cur = ""
-        for w in words:
-            test = cur + w if is_ko else (cur + " " + w if cur else w)
-            if get_text_width(test, font) <= max_w:
-                cur = test
-            else:
+        for seg in text.split("\n"):
+            cur = ""
+            for w in seg.split():
+                test = (cur + " " + w) if cur else w
+                if get_text_width(test, font) <= max_w:
+                    cur = test
+                    continue
                 if cur:
                     lines.append(cur)
+                # 어절 하나가 한 줄보다 길면 글자 단위로 분할
+                while get_text_width(w, font) > max_w and len(w) > 1:
+                    cut = len(w)
+                    while cut > 1 and get_text_width(w[:cut], font) > max_w:
+                        cut -= 1
+                    lines.append(w[:cut])
+                    w = w[cut:]
                 cur = w
-        if cur:
-            lines.append(cur)
+            if cur:
+                lines.append(cur)
         return lines
 
     # ── 훅 문장 (메인 카피) — 중앙 상단 배치 ──
@@ -193,7 +201,8 @@ def overlay_text(
     draw_text_outline((pad_x, author_y), author, font_author, "#CCCCCC", outline_width=2)
 
     # ── 채널 태그 (하단) ──
-    tag = "핵심요약" if is_ko else "Book Summary"
+    if not tag:
+        tag = "핵심요약" if is_ko else "Book Summary"
     draw_text_outline((pad_x, H - int(H * 0.085)), tag, font_tag, accent, outline_width=2)
 
     return img
@@ -202,7 +211,7 @@ def overlay_text(
 def check_server_health() -> bool:
     try:
         resp = requests.get(f"{FLUX_SERVER}/health", timeout=5)
-        return resp.json().get("status") == "ok"
+        return resp.json().get("status") in ("ok", "ready")
     except Exception:
         return False
 
@@ -219,6 +228,7 @@ def generate_thumbnail(
     steps: int = 4,
     seed: int = -1,
     force: bool = False,
+    tag: str | None = None,
 ) -> Path | None:
     """
     썸네일 생성 메인 함수
@@ -270,7 +280,7 @@ def generate_thumbnail(
 
     img = Image.open(io.BytesIO(base64.b64decode(img_b64)))
     img = overlay_text(img, hook=hook, author=author,
-                       book_title=book_title, language=language)
+                       book_title=book_title, language=language, tag=tag)
     img.save(output_path, format="JPEG", quality=95)
 
     elapsed = time.time() - start
@@ -321,6 +331,7 @@ if __name__ == "__main__":
     parser.add_argument("--output-dir", default="output")
     parser.add_argument("--language", choices=["ko", "en", "both"], default="both")
     parser.add_argument("--force", action="store_true")
+    parser.add_argument("--tag", default=None, help="좌하단 채널 태그 (기본: 핵심요약/Book Summary, 일당백은 '일당백' 지정)")
     args = parser.parse_args()
 
     if args.language == "both":
@@ -339,5 +350,5 @@ if __name__ == "__main__":
         hook = args.hook_ko if args.language == "ko" else args.hook_en
         img_prompt = args.image_prompt_ko if args.language == "ko" else args.image_prompt_en
         path = generate_thumbnail(title, author, args.language, hook, img_prompt,
-                                  args.output_dir, force=args.force)
+                                  args.output_dir, force=args.force, tag=args.tag)
         print(f"결과: {path}")
