@@ -819,6 +819,27 @@ async def _generate_and_download_video(page, output_path: str) -> Optional[str]:
         try:
             video_status = await page.evaluate("""
                 (() => {
+                    // 방법 0: 생성 실패 감지 (신 UI: "동영상 개요를 생성할 수 없습니다" + 삭제 버튼)
+                    // 단, 생성 중 표시가 있으면 실패 판정 금지 (이전 실패 아티팩트 잔존 시 오탐 방지)
+                    const allEls0 = document.querySelectorAll('*');
+                    let generating0 = false;
+                    for (const el of allEls0) {
+                        const txt = (el.innerText || '').trim();
+                        if (txt.length < 120 &&
+                            (txt.includes('생성 중') || txt.includes('잠시 기다려') ||
+                             txt.includes('Generating'))) { generating0 = true; break; }
+                    }
+                    if (!generating0) {
+                        for (const el of allEls0) {
+                            const txt = (el.innerText || '').trim();
+                            if (txt.length < 100 &&
+                                (txt.includes('생성할 수 없') || txt.includes("couldn't be generated") ||
+                                 txt.includes('could not be generated') || txt.includes('생성하지 못했'))) {
+                                return 'generation_failed';
+                            }
+                        }
+                    }
+
                     // 방법 1: 직접 "다운로드" 버튼 탐색
                     const btns = document.querySelectorAll('button, [role="button"]');
                     for (const b of btns) {
@@ -855,6 +876,11 @@ async def _generate_and_download_video(page, output_path: str) -> Optional[str]:
                     return 'unknown';
                 })()
             """)
+
+            if video_status == 'generation_failed':
+                print(f"\n   ❌ NLM 측 생성 실패 감지 ({m}분 {s}초 경과)")
+                await _screenshot(page, "err_generation_failed")
+                return None
 
             if video_status == 'download_btn_visible':
                 # 다운로드 버튼이 직접 보임
@@ -947,12 +973,46 @@ async def _download_via_icon(page, output_path: str) -> Optional[str]:
         return None
 
 
+async def _open_artifact_detail(page) -> bool:
+    """스튜디오 패널의 완성된 비디오 아티팩트 행(제목 영역)을 클릭해 상세 뷰 열기 (신 UI)
+
+    상세 뷰가 열려야 ⬇ 다운로드 아이콘이 나타남. play/⋮ 아이콘 클릭으로는 안 열림.
+    """
+    row = await page.evaluate("""
+        (() => {
+            const els = document.querySelectorAll('div, li, article, section');
+            let best = null;
+            for (const el of els) {
+                if (el.offsetParent === null) continue;
+                const rect = el.getBoundingClientRect();
+                if (rect.x < 940 || rect.width < 150 || rect.height < 30 || rect.height > 150) continue;
+                const txt = (el.innerText || '').trim();
+                if (!txt.includes('설명 동영상') && !txt.includes('Explanatory video')) continue;
+                const area = rect.width * rect.height;
+                if (!best || area < best.area) {
+                    best = {x: rect.x, y: rect.y, w: rect.width, h: rect.height, area: area};
+                }
+            }
+            return best;
+        })()
+    """)
+    if not row:
+        return False
+    # 행 좌측 1/3 지점(제목 영역) 클릭 — play/⋮ 버튼 회피
+    await page.mouse.click(row["x"] + row["w"] * 0.3, row["y"] + row["h"] / 2)
+    await page.wait_for_timeout(4000)
+    print("   📂 아티팩트 상세 뷰 열기 클릭")
+    return True
+
+
 async def _download_from_menu(page, output_path: str) -> Optional[str]:
     """비디오 항목의 ⋮ 메뉴 또는 플레이어에서 다운로드"""
     Path(output_path).parent.mkdir(parents=True, exist_ok=True)
 
-    # 전략 0 (신 UI): 동영상 개요 상세 패널의 직접 ⬇ 아이콘
+    # 전략 0 (신 UI): 아티팩트 행 클릭 → 상세 뷰 → 직접 ⬇ 아이콘
     result = await _download_via_icon(page, output_path)
+    if not result and await _open_artifact_detail(page):
+        result = await _download_via_icon(page, output_path)
     if result:
         return result
 

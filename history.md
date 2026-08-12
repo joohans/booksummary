@@ -2,6 +2,18 @@
 
 ---
 
+## 2026-08-12
+
+### 시즌2 26화 「곰브리치 세계사」 (4파트) 제작·업로드
+
+- NLM Video Overview 4개 생성 (고대문명/그리스·로마/중세/근대 — 원본 4부작 대응)
+  - Part 2는 NLM 측 간헐 생성 실패 2회 → 새 노트북으로 재생성해 해결
+- `A_Little_History_of_the_World_full_episode_ko.mp4` GPU 151 렌더링 (39:54, 1.3GB)
+- 업로드: https://www.youtube.com/watch?v=E3Boa2T-G4c (2026-08-13 09:00Z 공개 예약)
+- 챕터를 역사서에 맞게 수정 (소설 줄거리 → 문명의 탄생/그리스·로마/중세/근대)
+- automator 개선: NLM 생성 실패 즉시 감지(오탐 방지 포함), 아티팩트 상세 뷰 열기(`_open_artifact_detail`) 후 ⬇ 다운로드 — 신규 파트는 생성~다운로드 무개입 완주 확인
+- translations: 곰브리치 세계사/에른스트 곰브리치 매핑 추가
+
 ## 2026-08-11
 
 ### 3개월 공백 후 재개 — NotebookLM(Gemini Notebook) 리브랜딩 대응
@@ -5293,3 +5305,11 @@
 - 업로드된 영상 수: 1개
 - [1] [일당백] 소년이 온다 (Human Acts · 배경지식·인포그래픽·책 분석)
   - URL: https://www.youtube.com/watch?v=CKxgZBvMC90
+
+## 2026-08-12
+
+### YouTube 업로드 완료
+- 업로드된 책: A_Little_History_of_the_World_full_episode_ko
+- 업로드된 영상 수: 1개
+- [1] [일당백] 곰브리치 세계사 (A Little History of the World · 배경지식·인포그래픽·책 분석)
+  - URL: https://www.youtube.com/watch?v=E3Boa2T-G4c
