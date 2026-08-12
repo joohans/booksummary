@@ -4,6 +4,14 @@
 
 ## 2026-08-12
 
+### 시즌2 27화 「왜 칸트인가」 제작·업로드 (같은 날, 전 과정 무개입 완주)
+
+- NLM 2파트 생성+다운로드 원샷 완주 (개입 0회 — 파이프라인 안정화 확인)
+- `Why_Kant_full_episode_ko.mp4` (16:23, 330MB), 챕터 철학서 맞춤 수정
+- 업로드: https://www.youtube.com/watch?v=qG8pOs9IVUk (2026-08-14 09:00Z 공개 예약)
+- translations: 왜 칸트인가/김상환, 중국 이야기/헨리 키신저 매핑 추가
+- 시즌2 28화 「중국 이야기」(키신저, 4부작) 소스 URL 파일 준비
+
 ### 시즌2 26화 「곰브리치 세계사」 (4파트) 제작·업로드
 
 - NLM Video Overview 4개 생성 (고대문명/그리스·로마/중세/근대 — 원본 4부작 대응)
@@ -5313,3 +5321,11 @@
 - 업로드된 영상 수: 1개
 - [1] [일당백] 곰브리치 세계사 (A Little History of the World · 배경지식·인포그래픽·책 분석)
   - URL: https://www.youtube.com/watch?v=E3Boa2T-G4c
+
+## 2026-08-12
+
+### YouTube 업로드 완료
+- 업로드된 책: Why_Kant_full_episode_ko
+- 업로드된 영상 수: 1개
+- [1] [일당백] 왜 칸트인가 (Why Kant · 배경지식·인포그래픽·책 분석)
+  - URL: https://www.youtube.com/watch?v=qG8pOs9IVUk
