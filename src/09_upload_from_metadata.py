@@ -327,13 +327,18 @@ class YouTubeUploader:
             if localizations:
                 try:
                     lang_keys = list(localizations.keys())
+                    default_lang = lang_keys[0] if lang_keys else 'en'
+                    # videos.update는 지정한 part를 통째로 교체하므로 snippet의 모든 필드를
+                    # 다시 보내야 한다. 누락된 필드는 YouTube에서 삭제된다 (tags 소실 원인).
                     update_body = {
                         'id': video_id,
                         'snippet': {
-                            'defaultLanguage': lang_keys[0] if lang_keys else 'en',
+                            'defaultLanguage': default_lang,
+                            'defaultAudioLanguage': default_lang,
                             'categoryId': body['snippet'].get('categoryId', '22'),
                             'title': body['snippet']['title'],
                             'description': body['snippet']['description'],
+                            'tags': body['snippet'].get('tags', []),
                         },
                         'localizations': localizations
                     }

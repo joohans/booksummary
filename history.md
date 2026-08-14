@@ -4,6 +4,17 @@
 
 ## 2026-08-14
 
+### 업로드 시 태그 소실·오디오 언어 오설정 버그 수정 + 기존 영상 일괄 정정
+
+- **원인**: `src/09_upload_from_metadata.py`가 업로드 직후 `videos.update(part='snippet')`를 호출하면서
+  update_body의 snippet에 `tags`와 `defaultAudioLanguage`를 넣지 않았음. YouTube API는 지정한 part를
+  통째로 교체하므로 두 필드가 삭제됐고, 오디오 언어는 이후 자동 감지값 en-US로 채워짐
+- **영향 범위**: 채널 415개 중 태그 소실 96개, 오디오 언어 오설정 289개 (합계 330개가 수정 대상)
+- **수정**: update_body의 snippet에 tags와 defaultAudioLanguage 포함 (신규 업로드분은 재발 없음)
+- **신규 스크립트** `src/28_fix_video_language_tags.py`: 오디오 언어 정정 + 태그 복구
+  (로컬 metadata.json 원본 우선, 없으면 영상 제목에서 책 제목 추출해 `generate_episode_tags()`로 재생성)
+- 2026-08-14 기준 150개 적용 완료 (전부 성공), **남은 180개는 일일 쿼터 때문에 다음 날 이어서 실행 필요**
+
 ### 시즌2 30화 「사랑의 학교(쿠오레)」 제작·업로드
 
 - 에드몬도 데 아미치스, 2부작. `Cuore_full_episode_ko.mp4` GPU 151 렌더링 (18:20, 615MB)

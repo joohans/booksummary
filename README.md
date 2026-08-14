@@ -777,6 +777,7 @@ python src/09_upload_from_metadata.py --privacy private --auto --force
 │   ├── 10_create_video_with_summary.py  # 영상 합성 (요약+리뷰)
 │   ├── 24_batch_update_affiliate_links.py  # 기존 영상 제휴 링크 일괄 업데이트
 │   ├── 25_batch_add_pinned_comments.py  # 기존 영상 고정 댓글 일괄 추가
+│   ├── 28_fix_video_language_tags.py  # 영상 오디오 언어 정정 및 소실 태그 복구
 │   └── ...
 └── README.md           # 이 파일
 ```
@@ -837,6 +838,26 @@ python src/09_upload_from_metadata.py --privacy private --auto --force
   python src/24_batch_update_affiliate_links.py --apply --limit 50
   ```
 - **멱등성 보장**: 이미 제휴 링크가 있는 영상은 건너뜀
+
+### 영상 언어·태그 일괄 정정
+
+업로드 직후 `videos.update(part='snippet')` 호출이 snippet을 통째로 교체하면서 `tags`와
+`defaultAudioLanguage`를 누락해, 태그가 삭제되고 오디오 언어가 en-US로 자동 설정되는 문제가 있었습니다.
+업로드 스크립트는 수정되었고, 이미 올라간 영상은 아래 스크립트로 정정합니다.
+
+- **정정 대상**: `defaultLanguage`와 어긋난 `defaultAudioLanguage`, 비어 있는 태그
+- **태그 복구**: 로컬 `output/*.metadata.json`의 원본을 우선 사용하고, 없으면 영상 제목에서 책 제목을
+  추출해 `generate_episode_tags()`로 재생성 (신규 업로드와 동일한 태그 체계)
+  ```bash
+  # 미리보기 (기본값)
+  python src/28_fix_video_language_tags.py
+  # 실제 적용 (쿼터 조절용 제한)
+  python src/28_fix_video_language_tags.py --apply --limit 150
+  # 언어만 정정하고 태그는 건드리지 않음
+  python src/28_fix_video_language_tags.py --apply --lang-only
+  ```
+- **쿼터 주의**: `videos.update`는 1회당 50 유닛으로 일일 한도가 10,000입니다. 200개를 넘기면
+  `--limit`으로 나눠 실행해야 하며, 쿼터 소진이 감지되면 스크립트가 자동 중단합니다.
 
 ### 일괄 고정 댓글 기능 (제휴 링크 포함)
 - **고정 댓글 일괄 추가**: `src/25_batch_add_pinned_comments.py`로 채널의 모든 영상에 고정 댓글 자동 추가
