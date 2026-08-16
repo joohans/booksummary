@@ -60,7 +60,7 @@ class ThumbnailGenerator:
             'en_subtitle': None
         }
         
-        # macOS 시스템 폰트 경로 (한글 지원 우선)
+        # 시스템 폰트 경로 (macOS 우선, 리눅스 서버 폴백 포함)
         font_paths = {
             'ko_title': [
                 '/System/Library/Fonts/Supplemental/AppleSDGothicNeo-Bold.ttf',
@@ -69,11 +69,17 @@ class ThumbnailGenerator:
                 '/Library/Fonts/AppleGothic.ttf',
                 '/System/Library/Fonts/Helvetica.ttc',
                 '/System/Library/Fonts/AppleGothic.ttc',  # TTC 파일도 시도
+                '/usr/share/fonts/truetype/nanum/NanumGothicBold.ttf',
+                '/usr/share/fonts/truetype/nanum/NanumBarunGothicBold.ttf',
+                '/usr/share/fonts/truetype/nanum/NanumGothic.ttf',
+                '/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc',
             ],
             'en_title': [
                 '/System/Library/Fonts/Supplemental/Arial Bold.ttf',
                 '/System/Library/Fonts/Helvetica.ttc',
                 '/Library/Fonts/Arial.ttf',
+                '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf',
+                '/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf',
             ]
         }
         
@@ -115,8 +121,11 @@ class ThumbnailGenerator:
             '/System/Library/Fonts/Supplemental/Times New Roman.ttf',
             '/Library/Fonts/Arial.ttf',
             '/System/Library/Fonts/Helvetica.ttc',
+            '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf',
+            '/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf',
+            '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf',
         ]
-        
+
         for path in en_font_paths:
             if os.path.exists(path):
                 try:

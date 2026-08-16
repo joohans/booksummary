@@ -15,17 +15,24 @@ CTA_TEXT = {
     "en": "If you enjoyed this, please subscribe and like!",
 }
 
-# 언어별 폰트 경로 우선순위
+# 언어별 폰트 경로 우선순위 (macOS 우선, 렌더링은 리눅스 GPU 서버에서 도므로 리눅스 경로 필수)
 FONT_PATHS = {
     "ko": [
         "/System/Library/Fonts/Supplemental/AppleGothic.ttf",
         "/System/Library/Fonts/AppleGothic.ttf",
         "/Library/Fonts/AppleGothic.ttf",
+        "/usr/share/fonts/truetype/nanum/NanumGothicBold.ttf",
+        "/usr/share/fonts/truetype/nanum/NanumBarunGothicBold.ttf",
+        "/usr/share/fonts/truetype/nanum/NanumGothic.ttf",
+        "/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc",
     ],
     "en": [
         "/System/Library/Fonts/Supplemental/Arial Bold.ttf",
         "/System/Library/Fonts/Supplemental/Arial.ttf",
         "/Library/Fonts/Arial.ttf",
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+        "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf",
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
     ],
 }
 
