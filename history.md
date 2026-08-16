@@ -4,6 +4,21 @@
 
 ## 2026-08-16
 
+### MoAI-ADK 프레임워크 제거
+
+- **제거 사유**: `moai` CLI 바이너리가 이 리눅스 머신에 없어 hook 14개가 전부 no-op(`exit 0`)이었고,
+  hook 스크립트에 박힌 경로도 `/Users/jsong/go/bin/moai`로 macOS 전용이었음.
+  SPEC 워크플로우(`/moai plan`·`run`·`sync`)도 사용 흔적 없음(`.moai/specs` 부재)
+- **삭제**: `.claude/agents/moai`(28) · `.claude/skills`(374) · `.claude/rules/moai`(27) ·
+  `.claude/hooks/moai`(15) · `output-styles/moai/moai.md` · `.moai/config`·`manifest.json`·`status_line.sh`
+  — 총 459개 파일, 약 6.5MB
+- **보존**: `.moai/plans`(YouTube 성장 전략 등 3건) · `.moai/project`(product·tech·structure) ·
+  출력 스타일 r2d2·yoda(`output-styles/` 상위로 이동)
+- **settings.json 정리**: hooks 14개 이벤트, `outputStyle`, `env.MOAI_CONFIG_SOURCE`,
+  `Bash(moai:*)` 권한 제거. `plansDirectory`는 plans 보존에 따라 유지
+- 발견한 별도 이슈: `settings.json`의 `env.PATH`가 macOS 경로로 하드코딩돼 있어 이 리눅스 머신에서
+  `python` 등 명령 탐색이 어긋남 (`.venv/bin/python` 직접 지정으로 우회 중) — 별도 처리 필요
+
 ### 리눅스 서버 한글 폰트 경로 누락 버그 수정 + 「위버멘쉬」 핵심요약 영상 제작
 
 - **버그**: `src/utils/subscribe_cta.py`와 `src/10_generate_thumbnail.py`의 폰트 경로가 macOS 전용
