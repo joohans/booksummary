@@ -16,8 +16,15 @@
   출력 스타일 r2d2·yoda(`output-styles/` 상위로 이동)
 - **settings.json 정리**: hooks 14개 이벤트, `outputStyle`, `env.MOAI_CONFIG_SOURCE`,
   `Bash(moai:*)` 권한 제거. `plansDirectory`는 plans 보존에 따라 유지
-- 발견한 별도 이슈: `settings.json`의 `env.PATH`가 macOS 경로로 하드코딩돼 있어 이 리눅스 머신에서
-  `python` 등 명령 탐색이 어긋남 (`.venv/bin/python` 직접 지정으로 우회 중) — 별도 처리 필요
+### macOS 하드코딩 경로 정리 (PATH·권한·문서)
+
+- `settings.json`의 `env.PATH`가 macOS 경로로 통째로 하드코딩돼 있었음. 23개 경로 중 실존하는 것은
+  시스템 기본 5개뿐이고 나머지 18개(`/Users/jsong/...`, `/opt/homebrew/...`)는 이 리눅스 머신에 없음.
+  이것이 `python: command not found`의 원인 → `env.PATH` 항목 제거(시스템 기본 PATH 사용)
+- `permissions.allow`의 macOS pyenv 경로 권한 제거, 실제 사용하는 `Bash(.venv/bin/python:*)` 추가
+  (settings.json·settings.local.json 양쪽)
+- CLAUDE.md 환경 정보 현행화: Python 3.12.3 / `.venv/bin/python` 명시 사용 / playwright는 시스템
+  `python3` 사용 / 렌더링은 GPU 서버 실행 원칙 추가. 자막 다운로드 예시 명령도 상대 경로로 수정
 
 ### 리눅스 서버 한글 폰트 경로 누락 버그 수정 + 「위버멘쉬」 핵심요약 영상 제작
 

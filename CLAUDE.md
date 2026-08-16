@@ -211,12 +211,11 @@
 
 2. **실행 명령어**
    ```bash
-   # pyenv Python 직접 사용 (가상환경에 문제가 있음)
-   /Users/jsong/.pyenv/versions/3.11.10/bin/python scripts/fetch_separate_scripts.py \
+   .venv/bin/python scripts/fetch_separate_scripts.py \
      --urls "URL1" "URL2" ...
 
    # 여러 URL이 제공된 경우
-   /Users/jsong/.pyenv/versions/3.11.10/bin/python scripts/fetch_separate_scripts.py \
+   .venv/bin/python scripts/fetch_separate_scripts.py \
      --urls "https://www.youtube.com/watch?v=VIDEO_ID_1" "https://www.youtube.com/watch?v=VIDEO_ID_2" \
      --title "책 제목"
    ```
@@ -508,10 +507,12 @@
 
 ## 환경 정보
 
-- **Python 버전**: 3.11.10 (pyenv)
-- **가상환경**: `.venv` (문제 있음, pyenv Python 직접 사용 권장)
-- **Python 경로**: `/Users/jsong/.pyenv/versions/3.11.10/bin/python`
-- **프로젝트 루트**: `/Users/jsong/dev/jsong1230-github/booksummary`
+- **실행 머신**: Linux (세션은 Linux 머신에서만 실행)
+- **Python**: 3.12.3, 가상환경 `.venv` 사용
+- **Python 실행**: `.venv/bin/python` — 이 머신에는 `python` 명령이 없으므로 반드시 명시할 것
+- **playwright 예외**: playwright는 시스템 python에만 설치돼 있어 NotebookLM 자동화 스크립트는 `python3`로 실행
+- **프로젝트 루트**: `~/dev/jsong1230-github/booksummary`
+- **영상 렌더링**: 로컬 금지, GPU 서버(192.168.0.150 / .151)에서 실행
 
 ## 주요 의존성
 
