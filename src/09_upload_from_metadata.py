@@ -125,6 +125,28 @@ class YouTubeUploader:
 
         return cleaned_tags
     
+    def _ensure_tags_applied(self, video_id: str, snippet: dict, retries: int = 2) -> None:
+        """업로드 직후 update에서 태그가 누락되는 경우가 있어 반영 여부를 확인하고 재시도한다."""
+        import time
+
+        for attempt in range(1, retries + 1):
+            time.sleep(5)
+            try:
+                assert self.youtube is not None, "YouTube client not initialized"
+                current = self.youtube.videos().list(part='snippet', id=video_id).execute()
+                applied = current['items'][0]['snippet'].get('tags', []) if current.get('items') else []
+                if applied:
+                    print(f"   🏷️ 태그 반영 확인: {len(applied)}개")
+                    return
+                print(f"   ⚠️ 태그가 반영되지 않음 — 재시도 {attempt}/{retries}")
+                self.youtube.videos().update(
+                    part='snippet', body={'id': video_id, 'snippet': snippet}
+                ).execute()
+            except Exception as e:
+                print(f"   ⚠️ 태그 재적용 실패 (무시): {e}")
+                return
+        print("   ⚠️ 태그 반영을 확인하지 못했습니다. 업로드 후 수동 확인이 필요합니다.")
+
     def upload_video(
         self,
         video_path: str,
@@ -348,6 +370,11 @@ class YouTubeUploader:
                         body=update_body
                     ).execute()
                     print(f"   ✅ 다국어 메타데이터 업데이트 완료")
+
+                    # 업로드 직후 update는 태그가 반영되지 않는 경우가 있다.
+                    # 실제로 반영됐는지 재조회해서, 비었으면 한 번 더 보낸다.
+                    if tags:
+                        self._ensure_tags_applied(video_id, update_body['snippet'])
                 except Exception as e:
                     print(f"   ⚠️ 다국어 메타데이터 업데이트 실패 (무시): {e}")
             
