@@ -4,6 +4,26 @@
 
 ## 2026-08-17
 
+### 「인생의 짧음에 대하여」(세네카) 핵심요약 제작·업로드
+
+- 세네카(루키우스 안나이우스 세네카), summary+video 스타일 한글판.
+  `On_the_Shortness_of_Life_kr.mp4` (14:36, 506MB), GPU150 렌더 (1시간 18분 소요)
+- 업로드: https://www.youtube.com/watch?v=oX1crCvtAbw (2026-09-10 목 09:00Z 공개 예약)
+- 구성: 5분 핵심 요약(OpenAI TTS **echo**, 4:48) → 4:51부터 NLM 심층 리뷰(9:45)
+- 무결성 검사 통과 (ffmpeg 에러 0건, max_volume −2.5dB), GPU 원본↔회수본 md5 일치.
+  렌더 중 `pgrep`으로 단일 프로세스 확인 (8/16 중복 렌더 사고 재발 방지 절차 적용)
+- 챕터·책 소개를 철학 에세이에 맞게 전면 수정 (기본 템플릿은 소설 전제).
+  파울리누스에게 보낸 편지 형식, '바쁜 사람들(옥쿠파티)' 비판, 과거·미래·쾌락 세 부류,
+  네로의 스승이자 자결을 명령받은 생애까지 반영
+- 썸네일: 준비된 Flux 배경(로마 철학자 + 모래시계 + 석양) + 훅 카피 "인생은 짧지 않다"
+  → `output/On_the_Shortness_of_Life_kr_thumbnail_ko.jpg`
+- 영문판 미제작(ko-only 모드) — 생성된 `_en.metadata.json`은 삭제
+- **태그 미반영 재발**: 업로드 스크립트의 `_ensure_tags_applied()` 재시도 2회가 모두 실패
+  (`tags: 0`). `videos().update(part=snippet)`로 수동 재적용해 26개 정상 반영 확인.
+  일당백에서는 정상 작동하나 핵심요약 경로에서 재현됨 — 추가 조사 필요
+- 재생목록: `27_manage_playlists.py`가 장르 `general`로 판정해 신규 플레이리스트를 만들려 하여
+  사용하지 않고, 기존 「[KOR] 책 요약 - 전체 모음」에 직접 추가
+
 ### 시즌2 32화 「예언자」 제작·업로드
 
 - 칼릴 지브란, 2부작. `The_Prophet_full_episode_ko.mp4` (17:55, 547MB), GPU150 렌더
@@ -5505,3 +5525,11 @@
 - 업로드된 영상 수: 1개
 - [1] [일당백] 예언자 (The Prophet · 배경지식·인포그래픽·책 분석)
   - URL: https://www.youtube.com/watch?v=kRO4OLUAbHk
+
+## 2026-08-17
+
+### YouTube 업로드 완료
+- 업로드된 책: On_the_Shortness_of_Life
+- 업로드된 영상 수: 1개
+- [1] [핵심 요약] 인생의 짧음에 대하여: 세네카 (On the Shortness of Life · 5분 핵심 요약·AI 심층 분석 · 핵심 주제·인사이트·정리)
+  - URL: https://www.youtube.com/watch?v=oX1crCvtAbw
