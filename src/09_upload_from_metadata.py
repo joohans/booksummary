@@ -90,62 +90,85 @@ class YouTubeUploader:
     
     def _validate_and_clean_tags(self, tags: list) -> list:
         """태그 검증 및 정리 (YouTube 규칙 준수)
-        - 개별 태그 30자, 공백→언더스코어, 특수문자 제거
-        - 전체 키워드 합계 500자 미만 (API 거부 방지, 쉼표 포함 계산)
+        - 공백 포함 복합 태그는 그대로 유지 (YouTube가 정상 허용)
+        - 전체 키워드 합계 500자 미만 (API 거부 방지, 쉼표+따옴표 포함 계산)
+
+        주의: 예전에는 공백을 언더스코어로 바꾸고 개별 태그를 30자로 잘랐는데,
+        둘 다 YouTube 제약이 아니라 자체 제약이었다. 31자 태그도 정상 수락되고
+        ('On the Shortness of Life Review' 실측), 공백 태그는 검색상 더 유리하다.
+        실제로 구속력이 있는 것은 전체 합계 500자뿐이다.
         """
         import re
-        MAX_TAG_LENGTH = 30  # YouTube 개별 태그 최대 길이
-        MAX_TOTAL_CHARS = 450  # 전체 키워드 합계 상한 (공식 500자, 쉼표 포함한 여유)
+        MAX_TAG_LENGTH = 100  # 비정상적으로 긴 문장이 태그로 새는 것만 막는 안전장치
+        MAX_TOTAL_CHARS = 450  # 전체 키워드 합계 상한 (공식 500자, 여유 확보)
 
         cleaned_tags = []
         for tag in tags:
             if not tag or not isinstance(tag, str):
                 continue
-            tag = tag.strip()
+            tag = re.sub(r'\s+', ' ', tag).strip()
             if not tag:
                 continue
-            tag = re.sub(r'\s+', '_', tag)
             if len(tag) > MAX_TAG_LENGTH:
-                print(f"   ⚠️ 태그 길이 초과 (30자): '{tag[:50]}...' (건너뜀)")
+                print(f"   ⚠️ 태그 길이 초과 ({MAX_TAG_LENGTH}자): '{tag[:50]}...' (건너뜀)")
                 continue
             if any(c in tag for c in ['<', '>', '&', '"', "'", '\n', '\r', '\t']):
-                tag = re.sub(r'[<>&"\'\\n\\r\\t]', '', tag)
-                if not tag.strip():
+                tag = re.sub(r'[<>&"\'\n\r\t]', '', tag).strip()
+                if not tag:
                     continue
             cleaned_tags.append(tag)
 
-        # YouTube: 전체 키워드 길이(쉼표 포함) < 500자. 넘으면 앞쪽 태그만 유지
+        # YouTube: 전체 키워드 길이 < 500자. 공백 포함 태그는 따옴표로 감싸져 2자를 더 먹는다
         def total_len(lst):
-            return sum(len(t) for t in lst) + max(0, len(lst) - 1)  # 쉼표
+            return sum(len(t) + (2 if ' ' in t else 0) for t in lst) + max(0, len(lst) - 1)
 
         while cleaned_tags and total_len(cleaned_tags) > MAX_TOTAL_CHARS:
             cleaned_tags.pop()
-        if total_len(cleaned_tags) > MAX_TOTAL_CHARS:
-            cleaned_tags.clear()
 
         return cleaned_tags
     
-    def _ensure_tags_applied(self, video_id: str, snippet: dict, retries: int = 2) -> None:
-        """업로드 직후 update에서 태그가 누락되는 경우가 있어 반영 여부를 확인하고 재시도한다."""
+    def _ensure_tags_applied(
+        self,
+        video_id: str,
+        snippet: dict,
+        retries: int = 2,
+        update_response: Optional[dict] = None,
+    ) -> None:
+        """태그 반영 여부를 확인한다.
+
+        검증 기준은 videos().update 응답이다. update 응답에는 서버가 확정한 snippet이
+        그대로 담겨 오므로, 여기에 태그가 있으면 쓰기는 이미 성공한 것이다.
+
+        videos().list 읽기 경로는 업로드 직후 수 분간 태그를 빈 값으로 반환하는
+        전파 지연이 있다 (2026-08-17 세네카 업로드에서 확인). 그래서 list 결과만 보고
+        판단하면 정상 반영도 실패로 오탐하고, 불필요한 재전송을 반복한다.
+        """
         import time
 
+        if update_response is not None:
+            applied = (update_response.get('snippet') or {}).get('tags') or []
+            if applied:
+                print(f"   🏷️ 태그 반영 확인: {len(applied)}개 (update 응답 기준)")
+                return
+            print("   ⚠️ update 응답에 태그가 없음 — 재전송합니다")
+
         for attempt in range(1, retries + 1):
-            time.sleep(5)
             try:
                 assert self.youtube is not None, "YouTube client not initialized"
-                current = self.youtube.videos().list(part='snippet', id=video_id).execute()
-                applied = current['items'][0]['snippet'].get('tags', []) if current.get('items') else []
-                if applied:
-                    print(f"   🏷️ 태그 반영 확인: {len(applied)}개")
-                    return
-                print(f"   ⚠️ 태그가 반영되지 않음 — 재시도 {attempt}/{retries}")
-                self.youtube.videos().update(
+                resp = self.youtube.videos().update(
                     part='snippet', body={'id': video_id, 'snippet': snippet}
                 ).execute()
+                applied = (resp.get('snippet') or {}).get('tags') or []
+                if applied:
+                    print(f"   🏷️ 태그 반영 확인: {len(applied)}개 (재전송 {attempt}회)")
+                    return
+                print(f"   ⚠️ 태그가 반영되지 않음 — 재시도 {attempt}/{retries}")
+                time.sleep(5)
             except Exception as e:
                 print(f"   ⚠️ 태그 재적용 실패 (무시): {e}")
                 return
         print("   ⚠️ 태그 반영을 확인하지 못했습니다. 업로드 후 수동 확인이 필요합니다.")
+        print("      (videos().list 는 업로드 직후 지연이 있어 몇 분 뒤 다시 확인하세요)")
 
     def upload_video(
         self,
@@ -182,7 +205,7 @@ class YouTubeUploader:
         tags = self._validate_and_clean_tags(tags)
         if len(tags) < original_tag_count:
             print(f"   ⚠️ 태그 정리: {original_tag_count}개 → {len(tags)}개 (YouTube 길이 제한 적용)")
-        total_tag_chars = sum(len(t) for t in tags) + max(0, len(tags) - 1)
+        total_tag_chars = sum(len(t) + (2 if ' ' in t else 0) for t in tags) + max(0, len(tags) - 1)
         print(f"   🏷️ 태그 {len(tags)}개 (총 {total_tag_chars}자)")
         
         # Description 검증 및 수정
@@ -365,16 +388,18 @@ class YouTubeUploader:
                         'localizations': localizations
                     }
                     assert self.youtube is not None, "YouTube client not initialized"
-                    self.youtube.videos().update(
+                    update_response = self.youtube.videos().update(
                         part='snippet,localizations',
                         body=update_body
                     ).execute()
                     print(f"   ✅ 다국어 메타데이터 업데이트 완료")
 
-                    # 업로드 직후 update는 태그가 반영되지 않는 경우가 있다.
-                    # 실제로 반영됐는지 재조회해서, 비었으면 한 번 더 보낸다.
+                    # 태그 반영은 update 응답으로 확인한다 (list 는 직후 지연이 있음)
                     if tags:
-                        self._ensure_tags_applied(video_id, update_body['snippet'])
+                        self._ensure_tags_applied(
+                            video_id, update_body['snippet'],
+                            update_response=update_response,
+                        )
                 except Exception as e:
                     print(f"   ⚠️ 다국어 메타데이터 업데이트 실패 (무시): {e}")
             
