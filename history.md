@@ -4,6 +4,17 @@
 
 ## 2026-08-17
 
+### 시즌2 32화 「예언자」 제작·업로드
+
+- 칼릴 지브란, 2부작. `The_Prophet_full_episode_ko.mp4` (17:55, 547MB), GPU150 렌더
+- 업로드: https://www.youtube.com/watch?v=kRO4OLUAbHk (2026-09-07 월 09:00Z 공개 예약)
+- 31화 차라투스트라는 채널에 이미 있어 건너뛰고 32화로 진행
+- 챕터·책 소개를 산문시집에 맞게 수정 (P1 20세기의 성경이라 불린 책 / P2 사랑·일·자유에 대한 26편의 대답)
+- 썸네일: Flux 배경(배를 기다리는 예언자) + 훅 카피 "칼릴 지브란 / 함께 있되 거리를 두라"
+- **어제 사고 대응 절차 적용**: 렌더 전 양쪽 GPU 서버 기존 프로세스 확인 → 단일 실행 검증 →
+  완료 후 무결성 검사(에러 0건) 통과 후 다음 단계 진행. 태그도 42개 정상 반영
+- NLM 시작 시 Xvfb가 죽어 있어 "Missing X server"로 실패 → 재기동 후 정상 진행
+
 ### 시즌2 30화 「탤런트 코드」 제작·업로드 + 중복 렌더로 인한 파일 손상 대응
 
 - 대니얼 코일, 2부작. `The_Talent_Code_full_episode_ko.mp4` (19:59, 367MB), GPU150 렌더
@@ -5486,3 +5497,11 @@
 - 업로드된 영상 수: 1개
 - [1] [일당백] 탤런트 코드 (The Talent Code · 배경지식·인포그래픽·책 분석)
   - URL: https://www.youtube.com/watch?v=a0kW20wzLW4
+
+## 2026-08-17
+
+### YouTube 업로드 완료
+- 업로드된 책: The_Prophet_full_episode_ko
+- 업로드된 영상 수: 1개
+- [1] [일당백] 예언자 (The Prophet · 배경지식·인포그래픽·책 분석)
+  - URL: https://www.youtube.com/watch?v=kRO4OLUAbHk
