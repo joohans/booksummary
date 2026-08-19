@@ -785,6 +785,10 @@ def translate_book_title(book_title: str) -> str:
         "한국의 베스트셀러": "Korean Bestsellers",
         "한국의_베스트셀러": "Korean Bestsellers",
         "Korean Bestsellers": "Korean Bestsellers",
+        "일리아스": "The Iliad",
+        "The Iliad": "The Iliad",
+        "The_Iliad": "The Iliad",
+        "Iliad": "The Iliad",
     }
     
     # 공백을 언더스코어로 변환한 버전도 확인
@@ -1025,6 +1029,9 @@ def translate_book_title_to_korean(book_title: str) -> str:
         "The Art of Worldly Wisdom": "사람을 얻는 지혜",
         "The_Art_of_Worldly_Wisdom": "사람을_얻는_지혜",
         "Art of Worldly Wisdom": "사람을 얻는 지혜",
+        "The Iliad": "일리아스",
+        "The_Iliad": "일리아스",
+        "Iliad": "일리아스",
     }
     
     # 공백을 언더스코어로 변환한 버전도 확인

@@ -24,9 +24,9 @@
     "notebooklm-mcp": {
       "$comment": "NotebookLM MCP - 노트북 생성, 오디오/비디오 생성 자동화",
       "command": "/bin/bash",
-      "args": ["-l", "-c", "DISPLAY=:99 exec npx -y notebooklm-mcp"],
+      "args": ["-l", "-c", "DISPLAY=:1 exec npx -y notebooklm-mcp"],
       "env": {
-        "DISPLAY": ":99"
+        "DISPLAY": ":1"
       }
     }
   },
