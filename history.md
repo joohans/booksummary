@@ -5570,3 +5570,11 @@
 - 업로드된 영상 수: 1개
 - [1] [핵심 요약] 일리아스: 호메로스 (5분 핵심 요약·AI 심층 분석)
   - URL: https://www.youtube.com/watch?v=o_N87XCOMAU
+
+## 2026-08-19
+
+### YouTube 업로드 완료
+- 업로드된 책: The_Odyssey
+- 업로드된 영상 수: 1개
+- [1] [핵심 요약] 오디세이아: 호메로스 (5분 핵심 요약·AI 심층 분석)
+  - URL: https://www.youtube.com/watch?v=eerOw9VjW_Y
