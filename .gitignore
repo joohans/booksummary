@@ -106,3 +106,4 @@ secrets/google-cloud-tts-key.json
 scripts/cookies.txt
 *.cookies.txt
 
+data/comment_check_latest.txt
