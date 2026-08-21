@@ -796,6 +796,11 @@ def translate_book_title(book_title: str) -> str:
         "Oedipus Rex": "Oedipus Rex",
         "Oedipus_Rex": "Oedipus Rex",
         "Oedipus the King": "Oedipus Rex",
+        "천의 얼굴을 가진 영웅": "The Hero with a Thousand Faces",
+        "천의_얼굴을_가진_영웅": "The Hero with a Thousand Faces",
+        "The Hero with a Thousand Faces": "The Hero with a Thousand Faces",
+        "The_Hero_with_a_Thousand_Faces": "The Hero with a Thousand Faces",
+        "Hero with a Thousand Faces": "The Hero with a Thousand Faces",
     }
     
     # 공백을 언더스코어로 변환한 버전도 확인
@@ -1040,6 +1045,9 @@ def translate_book_title_to_korean(book_title: str) -> str:
         "Oedipus Rex": "오이디푸스 왕",
         "Oedipus_Rex": "오이디푸스_왕",
         "Oedipus the King": "오이디푸스 왕",
+        "The Hero with a Thousand Faces": "천의 얼굴을 가진 영웅",
+        "The_Hero_with_a_Thousand_Faces": "천의_얼굴을_가진_영웅",
+        "Hero with a Thousand Faces": "천의 얼굴을 가진 영웅",
         "The_Iliad": "일리아스",
         "Iliad": "일리아스",
     }
@@ -1501,6 +1509,11 @@ def translate_author_name(author: str) -> str:
         "Homer": "Homer",
         "소포클레스": "Sophocles",
         "Sophocles": "Sophocles",
+        "조지프 캠벨": "Joseph Campbell",
+        "조지프_캠벨": "Joseph Campbell",
+        "조셉 캠벨": "Joseph Campbell",
+        "캠벨": "Joseph Campbell",
+        "Joseph Campbell": "Joseph Campbell",
         "이언 보스트리지": "Ian Bostridge",
         "이언_보스트리지": "Ian Bostridge",
         "Ian Bostridge": "Ian Bostridge",
@@ -1790,6 +1803,7 @@ def translate_author_name_to_korean(author: str) -> str:
         "Chris Niebauer": "크리스 니바우어",
         "Homer": "호메로스",
         "Sophocles": "소포클레스",
+        "Joseph Campbell": "조지프 캠벨",
         "Ian Bostridge": "이언 보스트리지",
         "Aldous Huxley": "올더스 헉슬리",
         "Huxley": "올더스 헉슬리",
