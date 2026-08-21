@@ -790,6 +790,12 @@ def translate_book_title(book_title: str) -> str:
         "The Iliad": "The Iliad",
         "The_Iliad": "The Iliad",
         "Iliad": "The Iliad",
+        "오이디푸스 왕": "Oedipus Rex",
+        "오이디푸스_왕": "Oedipus Rex",
+        "오이디푸스": "Oedipus Rex",
+        "Oedipus Rex": "Oedipus Rex",
+        "Oedipus_Rex": "Oedipus Rex",
+        "Oedipus the King": "Oedipus Rex",
     }
     
     # 공백을 언더스코어로 변환한 버전도 확인
@@ -1031,6 +1037,9 @@ def translate_book_title_to_korean(book_title: str) -> str:
         "The_Art_of_Worldly_Wisdom": "사람을_얻는_지혜",
         "Art of Worldly Wisdom": "사람을 얻는 지혜",
         "The Iliad": "일리아스",
+        "Oedipus Rex": "오이디푸스 왕",
+        "Oedipus_Rex": "오이디푸스_왕",
+        "Oedipus the King": "오이디푸스 왕",
         "The_Iliad": "일리아스",
         "Iliad": "일리아스",
     }
@@ -1490,6 +1499,8 @@ def translate_author_name(author: str) -> str:
         "Chris Niebauer": "Chris Niebauer",
         "호메로스": "Homer",
         "Homer": "Homer",
+        "소포클레스": "Sophocles",
+        "Sophocles": "Sophocles",
         "이언 보스트리지": "Ian Bostridge",
         "이언_보스트리지": "Ian Bostridge",
         "Ian Bostridge": "Ian Bostridge",
@@ -1778,6 +1789,7 @@ def translate_author_name_to_korean(author: str) -> str:
         "Benjamin Hardy": "벤저민 하디",
         "Chris Niebauer": "크리스 니바우어",
         "Homer": "호메로스",
+        "Sophocles": "소포클레스",
         "Ian Bostridge": "이언 보스트리지",
         "Aldous Huxley": "올더스 헉슬리",
         "Huxley": "올더스 헉슬리",
