@@ -46,6 +46,17 @@ _현재 낮은 우선순위 작업이 없습니다_
   - **근본 대응(미착수)**: history.md에서 초기 업로드분을 파싱해 CSV 백필, 또는
     `13_update_csv_from_youtube.py`를 채널 전체 재스캔 모드로 실행
 
+- [ ] **`data/ildangbaek_books.csv`의 `status=uploaded`가 실제 업로드를 뜻하지 않음** (2026-08-22 발견)
+  - 1984 행이 `status=uploaded`, `youtube_uploaded=2025-11-25`인데 채널 전수(471편) 확인 결과 미업로드
+  - 표식: `video_created`가 비었는데 `youtube_uploaded`만 채워진 모순 상태
+  - **대응**: 중복 판정은 YouTube API 제목만 사용 (`data/.video_titles_cache.json`)
+  - **근본 대응(미착수)**: `video_created`가 빈 `uploaded` 행을 전수 검사해 status 정정
+
+- [ ] **`02_get_images.py`의 후보 풀이 목표치와 같으면 저품질이 전부 살아남음** (2026-08-22)
+  - AI 검증은 상위 N개만 남기는 방식이라, 130개 받아 100개를 남기면 저점수(≤4점)가 39개까지 섞임
+  - **대응**: `--skip-validation`으로 풀을 2배(210개)로 받은 뒤 `validate_images_with_ai(target_count=100)`를 별도 호출 → 저점수 0개 달성
+  - 개선안: 다운로드 배수(현재 1.3배)를 2배로 올리거나, 저점수 비율이 높으면 자동 추가 수집
+
 - [ ] **`02_get_images.py`가 한글 제목/저자만으로는 이미지를 거의 못 받음** (2026-08-21)
   - 「오이디푸스 왕」/「소포클레스」로 10개, 「오디세이아」로 35개만 수집됨 (목표 100개)
   - **대응**: `--keywords`로 영문 정밀 키워드 20개를 직접 지정하면 100개 확보 가능
