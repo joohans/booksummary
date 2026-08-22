@@ -31,8 +31,11 @@ def generate_seo_subtitle(
     # Beyond Page 채널 포맷을 먼저 반영한 "기본 부제"를 만들고,
     # summary_video는 장르 키워드를 덧붙여 SEO를 강화합니다.
     if content_type == "summary_video":
-        base_ko = "5분 핵심 요약·AI 심층 분석"
-        base_en = "5-min Summary · AI Deep Dive"
+        # 실제 영상 길이는 12~15분(요약 5분 + NLM 심층 리뷰 8~11분)이므로
+        # 제목에 "5분"을 쓰면 5:00 부근 이탈을 유발한다 (2026-08-22 정리).
+        # 앞에 붙는 "[핵심 요약]" 접두사와도 중복이므로 부제에서는 제외한다.
+        base_ko = "AI 심층 분석"
+        base_en = "AI Deep Dive"
     else:  # full_episode (일당백)
         base_ko = "배경지식·인포그래픽·책 분석"
         base_en = "Background · Infographics · Analysis"
@@ -40,83 +43,10 @@ def generate_seo_subtitle(
         # 일당백은 구조가 고정이라 장르 키워드보다 구조 키워드를 우선합니다.
         return base_ko if language == "ko" else base_en
 
-    def _category_text() -> str:
-        if not book_info:
-            return ""
-        cats = book_info.get("categories") or []
-        if isinstance(cats, str):
-            cats = [cats]
-        cat_str = " ".join([c for c in cats if isinstance(c, str)])
-        desc = book_info.get("description") if isinstance(book_info.get("description"), str) else ""
-        return f"{cat_str}\n{desc}".lower()
-
-    def _guess_genre() -> str:
-        text = _category_text()
-        title_lower = (book_title or "").lower()
-
-        # 제목 기반 힌트 (book_info가 없을 때도 동작)
-        if "아포리즘" in (book_title or "") or "aphorism" in title_lower:
-            return "philosophy"
-
-        # category/description 기반 힌트
-        if any(k in text for k in ["philosophy", "철학"]):
-            return "philosophy"
-        if any(k in text for k in ["psychology", "self-help", "self help", "자기계발", "심리"]):
-            return "psychology"
-        if any(k in text for k in ["business", "economics", "management", "경제", "경영"]):
-            return "business"
-        if any(k in text for k in ["history", "역사"]):
-            return "history"
-        if any(k in text for k in ["science", "과학"]):
-            return "science"
-        if any(k in text for k in ["poetry", "시"]):
-            return "poetry"
-        if any(k in text for k in ["essay", "수필", "에세이"]):
-            return "essay"
-        if any(k in text for k in ["fiction", "novel", "소설"]):
-            return "fiction"
-        return "general"
-
-    genre = _guess_genre()
-
-    if language == "ko":
-        # 너무 길지 않게, 검색/관심 키워드 중심으로 고정 템플릿
-        if genre == "philosophy":
-            return f"{base_ko} · 삶의 지혜·행복·고독"
-        if genre == "psychology":
-            return f"{base_ko} · 습관·감정·성장"
-        if genre == "business":
-            return f"{base_ko} · 핵심 전략·실전 적용"
-        if genre == "history":
-            return f"{base_ko} · 핵심 사건·맥락·교훈"
-        if genre == "science":
-            return f"{base_ko} · 핵심 개념·의미·영향"
-        if genre == "poetry":
-            return f"{base_ko} · 시어·감정·해석"
-        if genre == "essay":
-            return f"{base_ko} · 문장·사유·인사이트"
-        if genre == "fiction":
-            return f"{base_ko} · 줄거리·핵심 주제·인물"
-        return f"{base_ko} · 핵심 주제·인사이트·정리"
-
-    # en
-    if genre == "philosophy":
-        return f"{base_en} · Wisdom, Happiness & Solitude"
-    if genre == "psychology":
-        return f"{base_en} · Habits, Mindset & Growth"
-    if genre == "business":
-        return f"{base_en} · Key Strategies & Takeaways"
-    if genre == "history":
-        return f"{base_en} · Key Events & Lessons"
-    if genre == "science":
-        return f"{base_en} · Key Ideas & Impact"
-    if genre == "poetry":
-        return f"{base_en} · Imagery, Emotion & Interpretation"
-    if genre == "essay":
-        return f"{base_en} · Quotes, Ideas & Insights"
-    if genre == "fiction":
-        return f"{base_en} · Plot, Themes & Characters"
-    return f"{base_en} · Key Ideas & Takeaways"
+    # 장르별 키워드 접미(예: "· 핵심 주제·인사이트·정리")는 2026-08-22에 제거했다.
+    # 제목이 70~87자까지 늘어나 모바일에서 잘렸고, 앞의 "[핵심 요약]" 접두사와
+    # 의미가 겹쳐 실익이 없었다. 부제는 구조 설명만 담는다.
+    return base_ko if language == "ko" else base_en
 
 
 def generate_hashtags(
