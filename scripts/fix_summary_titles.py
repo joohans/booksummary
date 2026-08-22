@@ -20,21 +20,43 @@ from googleapiclient.discovery import build
 CREDS = Path(__file__).resolve().parent.parent / "secrets" / "credentials.json"
 
 
+# 부제에서 걷어낼 토큰.
+#  - 거짓 시간 약속: "5분 핵심 요약" / "5-min Summary"  (실제 12~15분)
+#  - [핵심 요약] 접두사와 중복되는 문구
+#  - title_generator 에서 제거한 장르별 키워드 접미 전량
+_DROP_TOKENS = {
+    # 시간 약속 / 중복
+    "5분 핵심 요약", "5분핵심요약", "핵심 요약", "5-min summary", "5 min summary",
+    "5-minute summary", "summary",
+    # 한글 장르 접미
+    "삶의 지혜", "행복", "고독", "습관", "감정", "성장",
+    "핵심 전략", "실전 적용", "핵심 사건", "맥락", "교훈",
+    "핵심 개념", "의미", "영향", "시어", "해석", "문장", "사유",
+    "인사이트", "줄거리", "핵심 주제", "인물", "정리",
+    # 영문 장르 접미
+    "wisdom, happiness & solitude", "habits, mindset & growth",
+    "key strategies & takeaways", "key events & lessons",
+    "key ideas & impact", "imagery, emotion & interpretation",
+    "quotes, ideas & insights", "plot, themes & characters",
+    "key ideas & takeaways",
+}
+
+
 def clean_title(t: str) -> str:
-    """괄호 안의 부가 설명에서 거짓·중복 문구를 제거."""
+    """괄호 안 부가 설명에서 거짓 시간 약속·중복·장르 키워드 접미를 제거."""
     def fix_paren(m):
-        inner = m.group(1)
-        parts = [p.strip() for p in re.split(r"·", inner) if p.strip()]
-        drop = re.compile(
-            r"^(5\s*분\s*핵심\s*요약|5-?Min(ute)?\s*Summary|핵심\s*주제|인사이트|정리)$",
-            re.IGNORECASE,
-        )
-        kept = [p for p in parts if not drop.match(p)]
-        return f"({'·'.join(kept)})" if kept else ""
+        parts = [p.strip() for p in re.split(r"·", m.group(1)) if p.strip()]
+        kept = [p for p in parts if p.lower() not in _DROP_TOKENS]
+        return f"({' · '.join(kept)})" if kept else ""
 
     out = re.sub(r"\(([^()]*)\)", fix_paren, t)
-    out = re.sub(r"\s{2,}", " ", out).strip()
-    return out
+    return re.sub(r"\s{2,}", " ", out).strip()
+
+
+def _meaningful(old: str, new: str) -> bool:
+    """공백·구분자 간격만 달라진 변경이면 False (쿼터 낭비 방지)."""
+    norm = lambda s: re.sub(r"[\s·]+", "", s)
+    return norm(old) != norm(new)
 
 
 def main():
@@ -42,6 +64,7 @@ def main():
     ap.add_argument("--apply", action="store_true", help="실제 반영 (기본: 미리보기)")
     ap.add_argument("--include-public", action="store_true",
                     help="공개 영상도 포함 (기본: 예약된 비공개만)")
+    ap.add_argument("--limit", type=int, help="처리 편수 제한 (쿼터 분할용)")
     args = ap.parse_args()
 
     yt = build("youtube", "v3", credentials=Credentials.from_authorized_user_file(str(CREDS)))
@@ -70,10 +93,13 @@ def main():
             if "일당백" in t or "1DANG100" in t:      # 포맷 고정 — 제외
                 continue
             new = clean_title(t)
-            if new != t:
+            if new != t and _meaningful(t, new):
                 targets.append((v, t, new))
 
-    print(f"대상 {len(targets)}편\n")
+    if args.limit:
+        targets = targets[: args.limit]
+
+    print(f"대상 {len(targets)}편 (예상 쿼터 {len(targets) * 50:,}유닛)\n")
     for v, old, new in targets:
         tag = "예약" if v["status"].get("publishAt") else "공개"
         print(f"[{tag}] {v['id']}")
