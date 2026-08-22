@@ -801,6 +801,11 @@ def translate_book_title(book_title: str) -> str:
         "The Hero with a Thousand Faces": "The Hero with a Thousand Faces",
         "The_Hero_with_a_Thousand_Faces": "The Hero with a Thousand Faces",
         "Hero with a Thousand Faces": "The Hero with a Thousand Faces",
+        "시간의 역사": "A Brief History of Time",
+        "시간의_역사": "A Brief History of Time",
+        "A Brief History of Time": "A Brief History of Time",
+        "A_Brief_History_of_Time": "A Brief History of Time",
+        "Brief History of Time": "A Brief History of Time",
     }
     
     # 공백을 언더스코어로 변환한 버전도 확인
@@ -1048,6 +1053,9 @@ def translate_book_title_to_korean(book_title: str) -> str:
         "The Hero with a Thousand Faces": "천의 얼굴을 가진 영웅",
         "The_Hero_with_a_Thousand_Faces": "천의_얼굴을_가진_영웅",
         "Hero with a Thousand Faces": "천의 얼굴을 가진 영웅",
+        "A Brief History of Time": "시간의 역사",
+        "A_Brief_History_of_Time": "시간의_역사",
+        "Brief History of Time": "시간의 역사",
         "The_Iliad": "일리아스",
         "Iliad": "일리아스",
     }
@@ -1514,6 +1522,10 @@ def translate_author_name(author: str) -> str:
         "조셉 캠벨": "Joseph Campbell",
         "캠벨": "Joseph Campbell",
         "Joseph Campbell": "Joseph Campbell",
+        "스티븐 호킹": "Stephen Hawking",
+        "스티븐_호킹": "Stephen Hawking",
+        "호킹": "Stephen Hawking",
+        "Stephen Hawking": "Stephen Hawking",
         "이언 보스트리지": "Ian Bostridge",
         "이언_보스트리지": "Ian Bostridge",
         "Ian Bostridge": "Ian Bostridge",
@@ -1804,6 +1816,7 @@ def translate_author_name_to_korean(author: str) -> str:
         "Homer": "호메로스",
         "Sophocles": "소포클레스",
         "Joseph Campbell": "조지프 캠벨",
+        "Stephen Hawking": "스티븐 호킹",
         "Ian Bostridge": "이언 보스트리지",
         "Aldous Huxley": "올더스 헉슬리",
         "Huxley": "올더스 헉슬리",
