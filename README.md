@@ -71,6 +71,39 @@ pip install -r requirements.txt
 - `ALADIN_PARTNER_ID`: 알라딘 파트너스 제휴 링크용 (선택사항)
 - `YES24_PARTNER_ID`: Yes24 제휴 링크용 (선택사항)
 
+## 어떤 책을 만들지 정하는 법 (선정 기준)
+
+채널 조회수의 **70%가 검색**에서 오고, 성과가 좋은 영상은 전부 **정확한 책 제목 검색**으로
+유입된다 (2026-08-24 Analytics 실측 → `data/analytics_20260824.md`).
+따라서 편당 성과는 사실상 **"그 책 제목의 한국어 검색 수요 × 우리가 검색 상위에 걸리는지"**로
+결정된다. 판매순위가 높아도 경쟁이 세거나 검색어를 다른 콘텐츠가 가져가면 값이 남지 않는다.
+
+```bash
+# 1) 후보 발굴 — 알라딘 판매순위 기준, 이미 다룬 책은 자동 제외
+.venv/bin/python scripts/find_candidates_aladin.py --category 고전 --limit 40
+
+# 2) 후보의 '공급'(경쟁)과 '의도'를 계량
+.venv/bin/python scripts/measure_search_supply.py --titles "화씨 451|브래드버리" "부분과 전체|하이젠베르크"
+.venv/bin/python scripts/measure_search_supply.py --file candidates.txt --limit 20
+.venv/bin/python scripts/measure_search_supply.py --validate   # 기존 업로드분으로 지표 점검
+```
+
+판정 기준:
+
+| 지표 | 기준 | 근거 |
+|---|---|---|
+| 경쟁 조회수 중간값 | **5,000 미만이면 상위 진입 가능** | 히치하이커 2,644 → 1,958회 / 모비딕 39,140 → 516회 |
+| 제안어 | **사람이 눈으로 읽는다** | 「엔트로피」=화장품 브랜드, 「동물농장」=SBS TV, 「갈매기」=갈매기살 |
+
+> ⚠️ 자동완성 제안어의 '책 의도 비율'을 합성 점수로 만들려는 시도는 실패했다.
+> 표본이 작아 변형마다 결과가 뒤집힌다. **경쟁 강도만 자동 판정하고 의도는 사람이 본다.**
+>
+> ⚠️ `search.list` 는 호출당 100 units(일일 10,000)다. 업로드 1건이 1,600 units 이므로
+> 업로드 예정일에는 `--limit` 을 줄인다.
+
+중복 판정은 **YouTube API 의 실제 영상 제목**만 신뢰한다. CSV의 `status=uploaded` 는
+실제 업로드를 뜻하지 않는다 (1984·죄와 벌·동물농장 세 건 모두 오기록 실측).
+
 ## 빠른 시작 가이드 (처음 시작하는 경우)
 
 > **💡 처음 사용하시나요?** 이 섹션을 먼저 읽어보세요. 전체 프로세스를 단계별로 안내합니다.
