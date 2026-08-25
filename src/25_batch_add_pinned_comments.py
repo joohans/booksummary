@@ -82,6 +82,7 @@ class PinnedCommentAdder:
         self.youtube: Any = None
         self.channel_id = os.getenv("YOUTUBE_CHANNEL_ID")
         self.processed_video_ids = set()
+        self.quota_exhausted = False
 
         if not self.channel_id:
             raise ValueError("YOUTUBE_CHANNEL_ID가 설정되지 않았습니다.")
@@ -387,6 +388,20 @@ class PinnedCommentAdder:
         if match:
             return {"book_title": match.group(1).strip(), "author": "", "language": "en"}
 
+        # 패턴 9: 범용 폴백 — 위 패턴에 안 걸리는 구 제목 포맷을 모두 받는다 (2026-08-25 추가)
+        # 「[Summary] Ikigai Book Review」·「[핵심요약] 원칙: 레이 달리오」(공백 없는 태그)
+        # 「[한국어] 프로테스탄티즘의 윤리와 자본주의 정신 | [Korean] ...」 같은 것들이 여기 걸린다.
+        # 순서: 앞머리 대괄호 태그 제거 → 첫 `|` 또는 `(` 앞까지 → 상투어 앞까지 → `:` 앞(저자 분리)
+        match = re.match(r'\s*\[[^\]]+\]\s*(.+)', title)
+        if match:
+            head = re.split(r'[|(]', match.group(1))[0]
+            head = re.split(r'책\s*리뷰|Book\s*Review|핵심\s*정리|핵심\s*요약', head, flags=re.I)[0]
+            head = head.split(':')[0].replace('_', ' ')
+            head = re.sub(r'\s+', ' ', head).strip(' ·-—')
+            if len(head) >= 2:
+                lang = "ko" if re.search(r'[가-힣]', head) else "en"
+                return {"book_title": head, "author": "", "language": lang}
+
         return None
 
     def verify_book_title(self, title: str, language: str = "en") -> bool:
@@ -554,6 +569,8 @@ class PinnedCommentAdder:
 
         except HttpError as e:
             print(f"   ❌ 댓글 추가 실패: {e}")
+            if "quotaExceeded" in str(e):
+                self.quota_exhausted = True
             return False
 
     def process_videos(self, video_ids: Optional[List[str]] = None, limit: Optional[int] = None):
@@ -627,11 +644,11 @@ class PinnedCommentAdder:
             video_id = video['video_id']
             video_title = video['title']
 
-            # 이미 처리한 영상 건너뜀 (--recreate 모드 제외)
-            # --video-id 로 콕 집어 지정한 경우는 상태 파일을 신뢰하지 않는다.
-            # 비공개 상태에서 시도했다가 403 으로 실패한 영상이 "처리됨"으로 남아 있어서,
-            # 공개 전환 뒤 댓글이 실제로 없는데도 계속 건너뛰던 문제가 있었다 (2026-08-25 실측).
-            if not self.recreate and not video_ids and video_id in self.processed_video_ids:
+            # 상태 파일은 기본적으로 기록용이다. 건너뛸지는 실제 댓글 유무로 판단한다.
+            # 낡은 "처리됨" 항목 때문에 댓글 없는 영상이 조용히 빠지는 일이 반복됐다
+            # (비공개 403 실패분·드라이런 오염분). get_pinned_comment 가 1 unit 이라
+            # 상태 파일로 아끼는 쿼터보다 놓치는 비용이 크다. 옛 동작은 --resume 으로.
+            if self.resume and not self.recreate and video_id in self.processed_video_ids:
                 print(f"   ⏭️ 이미 처리된 영상 (건너뜀)")
                 skipped_count += 1
                 continue
@@ -724,12 +741,21 @@ class PinnedCommentAdder:
                 else:
                     error_count += 1
 
+                # 쿼터가 떨어졌으면 나머지를 두드리지 않고 멈춘다 (2026-08-25: 121회 헛시도)
+                if self.quota_exhausted:
+                    print("\n⛔ 쿼터 소진 — 중단합니다. 리셋(KST 16:00) 후 같은 명령으로 이어집니다.")
+                    break
+
                 # API 호출 간 대기
                 time.sleep(self.delay)
 
             except HttpError as e:
                 print(f"   ❌ API 오류: {e}")
                 error_count += 1
+                if "quotaExceeded" in str(e):
+                    print("\n⛔ 쿼터 소진 — 남은 영상을 건너뛰고 중단합니다.")
+                    print("   쿼터 리셋은 KST 16:00. 이후 같은 명령을 다시 실행하면 이어집니다.")
+                    break
                 time.sleep(self.delay)
             except Exception as e:
                 print(f"   ❌ 예외 발생: {e}")
