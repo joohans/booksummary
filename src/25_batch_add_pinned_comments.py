@@ -586,6 +586,25 @@ class PinnedCommentAdder:
             print("처리할 영상이 없습니다.")
             return
 
+        # 비공개·예약 영상은 댓글 API 가 403 을 준다. 미리 걸러낸다.
+        # (2026-08-25: 예약된 일당백 5편이 매번 403 을 맞고 있었다 — 공개 후 자동으로 대상이 된다)
+        try:
+            all_ids = [v["video_id"] for v in videos]
+            private = {}
+            for i in range(0, len(all_ids), 50):
+                for it in self.youtube.videos().list(
+                    part="status", id=",".join(all_ids[i:i + 50])
+                ).execute().get("items", []):
+                    if it["status"]["privacyStatus"] != "public":
+                        private[it["id"]] = it["status"].get("publishAt", "")[:10] or "비공개"
+            if private:
+                print(f"⏸ 비공개·예약 {len(private)}개 제외 (공개 후 처리):")
+                for vid, when in list(private.items())[:10]:
+                    print(f"   - {vid} ({when})")
+                videos = [v for v in videos if v["video_id"] not in private]
+        except Exception as e:  # noqa: BLE001
+            print(f"⚠️ 공개 상태 확인 실패 ({e}) — 전체 대상으로 진행합니다")
+
         mode_label = "🔍 DRY RUN (미리보기)" if self.dry_run else "✏️ APPLY (실제 추가)"
         if self.recreate:
             mode_label += " + 🔄 기존 댓글 삭제 후 재등록"
@@ -729,8 +748,13 @@ class PinnedCommentAdder:
         print(f"{'='*60}")
 
         # 상태 파일 저장 (새로 처리된 영상 추가)
-        self._save_state()
-        print(f"\n📋 상태 저장 완료: 총 {len(self.processed_video_ids)}개 처리된 영상")
+        # DRY RUN 에서는 저장하지 않는다. 미리보기가 "처리됨"으로 기록되면 뒤이은 --apply 가
+        # 전부 건너뛴다 — 2026-08-25 실측으로 71편이 게시 없이 스킵됐다.
+        if self.dry_run:
+            print(f"\n📋 DRY RUN — 상태 파일 저장 안 함 (대상 {len(self.processed_video_ids)}개 미리보기)")
+        else:
+            self._save_state()
+            print(f"\n📋 상태 저장 완료: 총 {len(self.processed_video_ids)}개 처리된 영상")
 
         if not self.dry_run and added_count > 0:
             print(f"\n⚠️ 중요: YouTube Studio에서 댓글을 수동으로 고정해야 합니다!")
