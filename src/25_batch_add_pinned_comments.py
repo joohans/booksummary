@@ -376,6 +376,17 @@ class PinnedCommentAdder:
             language = "ko"
             return {"book_title": book_title, "author": author, "language": language}
 
+        # 패턴 7: [일당백] 책제목 (영문제목 · ...) — 저자 없이 콜론이 안 붙는 형식
+        # 「왜 칸트인가」·「사랑의 학교」처럼 부제만 있는 편이 여기 걸린다 (2026-08-25 추가)
+        match = re.search(r'\[일당백\]\s*([^(\[|:·]+?)\s*[\(·]', title)
+        if match:
+            return {"book_title": match.group(1).strip(), "author": "", "language": "ko"}
+
+        # 패턴 8: [1DANG100] Book Title (... · ...) — 위의 영문판
+        match = re.search(r'\[1DANG100\]\s*([^(\[|:·]+?)\s*[\(·]', title)
+        if match:
+            return {"book_title": match.group(1).strip(), "author": "", "language": "en"}
+
         return None
 
     def verify_book_title(self, title: str, language: str = "en") -> bool:
@@ -554,8 +565,19 @@ class PinnedCommentAdder:
             limit: 최대 처리 개수
         """
         if video_ids:
-            # 특정 영상만 처리
-            videos = [{"video_id": vid, "title": "Unknown"} for vid in video_ids]
+            # 특정 영상만 처리 — 제목이 있어야 책 정보를 추출할 수 있으므로 API로 조회한다
+            videos = []
+            for i in range(0, len(video_ids), 50):
+                chunk = video_ids[i:i + 50]
+                try:
+                    items = self.youtube.videos().list(
+                        part="snippet", id=",".join(chunk)
+                    ).execute().get("items", [])
+                    found = {it["id"]: it["snippet"]["title"] for it in items}
+                except Exception as e:
+                    print(f"⚠️ 제목 조회 실패 ({e}) — ID만으로 진행합니다")
+                    found = {}
+                videos += [{"video_id": vid, "title": found.get(vid, "Unknown")} for vid in chunk]
         else:
             # 채널 전체 영상 가져오기
             videos = self.get_channel_videos(max_results=limit)
@@ -587,7 +609,10 @@ class PinnedCommentAdder:
             video_title = video['title']
 
             # 이미 처리한 영상 건너뜀 (--recreate 모드 제외)
-            if not self.recreate and video_id in self.processed_video_ids:
+            # --video-id 로 콕 집어 지정한 경우는 상태 파일을 신뢰하지 않는다.
+            # 비공개 상태에서 시도했다가 403 으로 실패한 영상이 "처리됨"으로 남아 있어서,
+            # 공개 전환 뒤 댓글이 실제로 없는데도 계속 건너뛰던 문제가 있었다 (2026-08-25 실측).
+            if not self.recreate and not video_ids and video_id in self.processed_video_ids:
                 print(f"   ⏭️ 이미 처리된 영상 (건너뜀)")
                 skipped_count += 1
                 continue

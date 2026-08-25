@@ -22,10 +22,30 @@ ROOT = Path(__file__).resolve().parent.parent
 CREDS = ROOT / "secrets" / "credentials.json"
 
 
+def load_ignored():
+    """답하지 않기로 한 댓글 ID 집합. data/comment_ignore.txt 한 줄에 하나.
+
+    `#` 이후는 주석이다. 답글 가치가 없다고 판단한 건(욕설·스팸)을 넣어 두면
+    매일 리포트에 다시 뜨지 않는다.
+    """
+    f = ROOT / "data" / "comment_ignore.txt"
+    if not f.exists():
+        return set()
+    out = set()
+    for line in f.read_text(encoding="utf-8").splitlines():
+        cid = line.split("#")[0].strip()
+        if cid:
+            out.add(cid)
+    return out
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--days", type=int, help="최근 N일 이내 댓글만")
+    ap.add_argument("--show-ignored", action="store_true", help="무시 목록도 함께 표시")
     args = ap.parse_args()
+
+    ignored = set() if args.show_ignored else load_ignored()
 
     yt = build("youtube", "v3", credentials=Credentials.from_authorized_user_file(str(CREDS)))
 
@@ -55,6 +75,8 @@ def main():
         if any(r["snippet"]["authorDisplayName"] == OWNER
                for r in it.get("replies", {}).get("comments", [])):
             continue
+        if it["snippet"]["topLevelComment"]["id"] in ignored:
+            continue
         pending.append({
             "cid": it["snippet"]["topLevelComment"]["id"],
             "vid": sn["videoId"],
@@ -82,6 +104,7 @@ def main():
         print(f"  영상: {titles.get(p['vid'], p['vid'])[:60]}")
         print(f"  내용: {p['text'][:240]}")
         print(f"  키   : (\"{p['author']}\", \"{p['vid']}\")")
+        print(f"  ID   : {p['cid']}   # 답하지 않을 거면 data/comment_ignore.txt 에 이 ID 추가")
         print()
     return 0
 

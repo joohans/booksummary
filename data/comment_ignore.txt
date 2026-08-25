@@ -1,0 +1,4 @@
+# 답하지 않기로 한 댓글 ID (한 줄에 하나, # 이후는 주석)
+# scripts/check_new_comments.py 가 이 목록을 건너뛴다. --show-ignored 로 다시 볼 수 있다.
+
+UgzbZKeSlQ_0CuM3EVh4AaABAg  # 2026-04-01 @rvera3708 "nauseous dross!" — 내용 없는 비난, 답글 가치 없음
