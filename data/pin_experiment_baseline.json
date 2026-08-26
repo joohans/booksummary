@@ -1,6 +1,6 @@
 {
   "recorded": "2026-08-25",
-  "note": "고정 전 기준선 — 고정 후 댓글 좋아요·답글 변화로 실익 판단",
+  "note": "고정 전 기준선 — 고정 후 댓글 좋아요·답글 변화로 실익 판단 | 고정 여부는 API로 확인 불가 → scripts/check_pinned.py 사용",
   "videos": [
     {
       "video_id": "7E51amuXo68",
@@ -23,14 +23,6 @@
       "title": "[일당백] 나는 고양이로소이다: 나쓰메 소세키 (I_Am_a_Cat · 배경지식·인포그래픽·책 분석)",
       "views": 1623,
       "comment_id": "UgyRDWqJ5upmXLQcgrh4AaABAg",
-      "comment_likes": 0,
-      "comment_replies": 0
-    },
-    {
-      "video_id": "1r_oGXMMbKY",
-      "title": "[핵심 요약] 특이점이 온다: 레이 커즈와일 (The Singularity Is Near · AI 심층 분석)",
-      "views": 1299,
-      "comment_id": "UgwAMueS4rRso2w5vZh4AaABAg",
       "comment_likes": 0,
       "comment_replies": 0
     },
@@ -82,5 +74,7 @@
       "comment_likes": 0,
       "comment_replies": 0
     }
-  ]
+  ],
+  "pinned_at": "2026-08-27",
+  "pinned_verified": "2026-08-27 — 5편 전부 \"@BeyondPage_Bi님이 고정함\" 배지 확인 (워치 페이지)"
 }
