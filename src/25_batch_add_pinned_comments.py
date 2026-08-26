@@ -392,15 +392,21 @@ class PinnedCommentAdder:
         # 「[Summary] Ikigai Book Review」·「[핵심요약] 원칙: 레이 달리오」(공백 없는 태그)
         # 「[한국어] 프로테스탄티즘의 윤리와 자본주의 정신 | [Korean] ...」 같은 것들이 여기 걸린다.
         # 순서: 앞머리 대괄호 태그 제거 → 첫 `|` 또는 `(` 앞까지 → 상투어 앞까지 → `:` 앞(저자 분리)
-        match = re.match(r'\s*\[[^\]]+\]\s*(.+)', title)
-        if match:
-            head = re.split(r'[|(]', match.group(1))[0]
-            head = re.split(r'책\s*리뷰|Book\s*Review|핵심\s*정리|핵심\s*요약', head, flags=re.I)[0]
-            head = head.split(':')[0].replace('_', ' ')
-            head = re.sub(r'\s+', ' ', head).strip(' ·-—')
-            if len(head) >= 2:
-                lang = "ko" if re.search(r'[가-힣]', head) else "en"
-                return {"book_title": head, "author": "", "language": lang}
+        # 대괄호 태그는 있으면 떼고, 없어도 진행한다. 태그 없는 구 영문 제목이 있다
+        # ("Complete Guide to Don Quixote | From Author & Background to Full Story",
+        #  "The Prince: A Necessary Evil for Awakened Citizens") — 2026-08-26 실측 15편
+        head = re.sub(r'^\s*\[[^\]]+\]\s*', '', title)
+        head = re.split(r'[|(]', head)[0]
+        head = re.sub(r'^\s*Complete\s+Guide\s+to\s+', '', head, flags=re.I)
+        head = re.split(
+            r'책\s*리뷰|Book\s*Review|핵심\s*정리|핵심\s*요약|Complete\s+Guide',
+            head, flags=re.I,
+        )[0]
+        head = head.split(':')[0].replace('_', ' ')
+        head = re.sub(r'\s+', ' ', head).strip(' ·-—')
+        if len(head) >= 2:
+            lang = "ko" if re.search(r'[가-힣]', head) else "en"
+            return {"book_title": head, "author": "", "language": lang}
 
         return None
 

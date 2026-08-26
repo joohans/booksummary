@@ -20,6 +20,21 @@ Data API 쿼터가 소진된 상태(리셋 16:00)에서, **Analytics API 는 쿼
   Smiling Proud Wanderer 20.4% (인도네시아 드라마 `pendekar hina kelana 2026` 유입).
   → 선정 기준에 "경쟁 중간값이 낮을 것" 말고 **"검색 의도가 책일 것"**을 명시적으로 추가했다
 
+### 고정 댓글 전 편 커버리지 달성 — 공개 455편 중 누락 0편
+
+16:10 cron 첫 실행 확인: `added=15 errors=0 quota_hits=0`. 정상 작동.
+
+- 다만 남은 31편 중 **15편만 처리됐다.** 나머지 16편은 쿼터가 아니라 **제목 추출 실패**였다 —
+  **대괄호 태그가 없는 구 영문 제목**이 원인이다
+  (`Complete Guide to Don Quixote | From Author & Background to Full Story`,
+  `The Prince: A Necessary Evil for Awakened Citizens`).
+  폴백이 `^\[...\]` 를 필수로 요구하고 있었다
+- 태그를 선택 사항으로 바꾸고 `Complete Guide to` 접두어 처리를 추가 → 재실행으로 15편 채움
+- **검증: 공개 455편 중 우리 댓글 없는 편 0편.** 오늘 총 173편 게시(143 + 15 + 15)
+- 남은 부정확 케이스 1건: 「Yukio Mishima: Patriotism and The Golden Pavilion」은 저자명이
+  제목 앞에 와서 책 제목 자리에 "Yukio Mishima" 가 들어간다(제휴 링크는 작가 검색으로 걸림)
+- 이제 예약 편이 공개되면 다음 16:10 에 자동으로 댓글이 달린다 — 수동 개입 불필요
+
 **루틴 보강 2건**
 
 1. `run-pin-catchup.sh` 신규 + **cron 16:10**(쿼터 리셋 10분 뒤). 공개 영상 중 댓글 없는 편을
