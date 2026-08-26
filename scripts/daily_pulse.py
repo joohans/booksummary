@@ -127,10 +127,15 @@ def tracked(ya, yt, out, today):
     """실험 편 / 대조군 추적 — 공개된 것만 나온다."""
     ids = {**EXPERIMENT, **CONTROL}
     meta = {}
-    for item in yt.videos().list(part="status,statistics,snippet", id=",".join(ids)).execute()["items"]:
-        meta[item["id"]] = item
-
     out.append("## 선정 기준 실험 추적\n")
+    try:
+        for item in yt.videos().list(part="status,statistics,snippet", id=",".join(ids)).execute()["items"]:
+            meta[item["id"]] = item
+    except Exception as e:  # noqa: BLE001
+        reason = "쿼터 소진" if "quotaExceeded" in str(e) else str(e)[:80]
+        out.append(f"⚠️ 조회 실패 ({reason})\n")
+        return
+
     out.append("| 편 | 상태 | 조회 | 좋아요 | 댓글 | 평균 시청률 |")
     out.append("|---|---|---:|---:|---:|---:|")
     for group, label in ((EXPERIMENT, "실험"), (CONTROL, "대조")):
@@ -161,25 +166,43 @@ def tracked(ya, yt, out, today):
 
 
 def actions(yt, out, today):
-    """오늘 처리할 수 있는 것 — 공개 전환 직후의 고정 댓글이 대표적이다."""
+    """오늘 처리할 수 있는 것 — 공개 전환 직후의 고정 댓글이 대표적이다.
+
+    Data API 쿼터를 쓴다. 쿼터가 소진돼도 위쪽 Analytics 섹션(별도 쿼터)은 남아야 하므로
+    여기서 삼켜서 리포트 전체를 죽이지 않는다 (2026-08-26).
+    """
     out.append("## 오늘의 액션\n")
     todo = []
 
-    ch = yt.channels().list(part="contentDetails", mine=True).execute()["items"][0]
+    try:
+        ch = yt.channels().list(part="contentDetails", mine=True).execute()["items"][0]
+    except Exception as e:  # noqa: BLE001
+        reason = "쿼터 소진" if "quotaExceeded" in str(e) else str(e)[:80]
+        out.append(f"- ⚠️ 확인 실패 ({reason}) — 지표 섹션은 정상입니다\n")
+        return
     up = ch["contentDetails"]["relatedPlaylists"]["uploads"]
     ids, tok = [], None
-    while len(ids) < 60:
-        r = yt.playlistItems().list(
-            part="contentDetails", playlistId=up, maxResults=50, pageToken=tok
-        ).execute()
-        ids += [i["contentDetails"]["videoId"] for i in r["items"]]
-        tok = r.get("nextPageToken")
-        if not tok:
-            break
+    try:
+        while len(ids) < 60:
+            r = yt.playlistItems().list(
+                part="contentDetails", playlistId=up, maxResults=50, pageToken=tok
+            ).execute()
+            ids += [i["contentDetails"]["videoId"] for i in r["items"]]
+            tok = r.get("nextPageToken")
+            if not tok:
+                break
+    except Exception as e:  # noqa: BLE001
+        reason = "쿼터 소진" if "quotaExceeded" in str(e) else str(e)[:80]
+        out.append(f"- ⚠️ 목록 조회 실패 ({reason})\n")
+        ids = []
 
     cutoff = (today - timedelta(days=10)).isoformat()
     for i in range(0, len(ids), 50):
-        for v in yt.videos().list(part="snippet,status", id=",".join(ids[i : i + 50])).execute()["items"]:
+        try:
+            batch = yt.videos().list(part="snippet,status", id=",".join(ids[i : i + 50])).execute()["items"]
+        except Exception:  # noqa: BLE001
+            break
+        for v in batch:
             if v["status"]["privacyStatus"] != "public":
                 continue
             if v["snippet"]["publishedAt"][:10] < cutoff:
