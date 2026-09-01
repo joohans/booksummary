@@ -242,6 +242,23 @@ python scripts/run_full_pipeline_from_downloads.py \
 5. ✅ 영상 생성 (Summary + NotebookLM Video)
 6. ✅ 메타데이터 생성 (timestamp 자동 포함)
 
+### ⚠️ 렌더 전 필수: 이미지 밝기 검사
+
+렌더는 1시간 이상 걸리므로, **렌더를 시작하기 전에** 이미지 풀의 밝기 이상치를 걸러냅니다.
+너무 어두운 사진이 한 장 섞이면 영상에서 그 4초가 화면이 꺼진 것처럼 보입니다.
+
+```bash
+# 보고만 (기본)
+.venv/bin/python scripts/check_image_brightness.py assets/images/{영문제목}
+
+# 이상치를 _rejected/ 로 격리
+.venv/bin/python scripts/check_image_brightness.py assets/images/{영문제목} --move
+```
+
+- 평균밝기 **30 미만**(검은 화면으로 읽힘) / **245 초과**(흰 화면)를 이상치로 잡습니다
+- 동굴·야간처럼 **의도적으로 어두운 컷**(평균 30~60대)은 통과합니다 — 문제는 내용이 안 보이는 한 자릿수입니다
+- 실측: 「수난이대」에서 평균밝기 9.8인 사진 1장이 64~67초를 검게 만들어 재렌더했습니다
+
 ### 📁 3단계: 결과 확인
 
 생성된 파일들은 `output/` 폴더에 저장됩니다:
