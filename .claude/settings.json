@@ -175,7 +175,6 @@
       "Glob(~/.aws/**)",
       "Glob(~/.config/gcloud/**)",
       "Bash(rm -rf /:*)",
-      "Bash(rm -rf /*:*)",
       "Bash(rm -rf ~:*)",
       "Bash(rm -rf ~/*:*)",
       "Bash(rm -rf C\\:/:*)",
@@ -213,7 +212,23 @@
       "Bash(redis-cli FLUSHALL:*)",
       "Bash(redis-cli FLUSHDB:*)",
       "Bash(psql -c DROP:*)",
-      "Bash(mysql -e DROP:*)"
+      "Bash(mysql -e DROP:*)",
+      "Bash(rm -rf /bin*)",
+      "Bash(rm -rf /boot*)",
+      "Bash(rm -rf /dev*)",
+      "Bash(rm -rf /etc*)",
+      "Bash(rm -rf /lib*)",
+      "Bash(rm -rf /lib64*)",
+      "Bash(rm -rf /opt*)",
+      "Bash(rm -rf /proc*)",
+      "Bash(rm -rf /root*)",
+      "Bash(rm -rf /sbin*)",
+      "Bash(rm -rf /srv*)",
+      "Bash(rm -rf /sys*)",
+      "Bash(rm -rf /usr*)",
+      "Bash(rm -rf /var*)",
+      "Bash(rm -rf /home)",
+      "Bash(rm -rf /home/jsong)"
     ]
   },
   "attribution": {
