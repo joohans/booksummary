@@ -723,6 +723,44 @@ async def _generate_and_download_video(page, output_path: str) -> Optional[str]:
     await page.wait_for_timeout(5000)  # 카드 활성화 → 맞춤설정 모달 표시 대기
     await _screenshot(page, "step4_after_card_click")
 
+    # 2-b. 형식을 "설명 동영상"으로 바꾼다 (2026-09-03 추가)
+    # NLM 이 "짧은 버전"(New!)을 추가하고 그것을 기본 선택으로 만들었다.
+    # 그대로 두면 1분짜리가 나온다 — 기존 편들의 8~9분 파트는 "설명 동영상" 형식이다.
+    print("   형식 '설명 동영상' 선택 중...")
+    fmt_result = await page.evaluate("""
+        (() => {
+            // 대화상자의 형식 카드는 버튼이 아닐 수 있어 클릭 가능한 조상을 찾아 올라간다
+            const wanted = ['설명 동영상', 'Explanatory video', 'Explainer'];
+            const els = document.querySelectorAll('*');
+            for (const el of els) {
+                if (el.offsetParent === null) continue;
+                const txt = (el.innerText || '').trim();
+                if (!txt) continue;
+                // 카드 제목만 있는 작은 요소를 노린다(설명문까지 포함된 큰 컨테이너 배제)
+                if (txt.length > 40) continue;
+                if (!wanted.some(w => txt === w || txt.startsWith(w))) continue;
+                let node = el;
+                for (let up = 0; up < 5 && node; up++) {
+                    const r = node.getBoundingClientRect();
+                    if (r.width > 150 && r.height > 60) {
+                        node.click();
+                        return 'clicked: ' + txt + ' (' + Math.round(r.width) + 'x' + Math.round(r.height) + ')';
+                    }
+                    node = node.parentElement;
+                }
+                el.click();
+                return 'clicked-leaf: ' + txt;
+            }
+            return null;
+        })()
+    """)
+    if fmt_result:
+        print(f"   ✅ 형식 선택: {fmt_result}")
+        await page.wait_for_timeout(1500)
+        await _screenshot(page, "step4_format_selected")
+    else:
+        print("   ⚠️ '설명 동영상' 카드를 못 찾았다 — 짧은 버전으로 생성될 수 있다")
+
     # 3. "생성" 버튼 찾기 (최대 20초 대기)
     # ⚠️ _clear_overlays() 호출하면 Escape로 모달이 닫히므로 호출하지 않음!
     print("   '생성' 버튼 찾는 중...")
@@ -851,9 +889,24 @@ async def _generate_and_download_video(page, output_path: str) -> Optional[str]:
                         }
                     }
 
-                    // 방법 2: Studio 패널에서 "동영상" 또는 "설명 동영상" 항목에 ▶ 재생 버튼 존재 확인
-                    // 완료된 비디오는 "설명 동영상 · 소스 N개 · X분 전" 형태로 표시됨
+                    // 방법 2: Studio 패널의 완성된 비디오 항목 감지
+                    // ⚠️ 2026-09-03 UI 변경 — 예전엔 "설명 동영상 · 소스 N개 · X분 전" 이었으나
+                    //    이제 자동 생성된 제목이 앞에 오고 "1:05 · 짧게 · 소스 3개 · 1분 전" 형태다.
+                    //    그래서 "설명 동영상" 문자열로 찾으면 영원히 못 찾는다(60분 헛대기 5회).
+                    //    ⇒ 재생시간(m:ss) + 소스 개수 조합으로 판정한다.
                     const allEls = document.querySelectorAll('*');
+                    const durRe = /\\b\\d{1,2}:\\d{2}\\b/;
+                    for (const el of allEls) {
+                        if (el.offsetParent === null) continue;
+                        const txt = (el.innerText || '').trim();
+                        if (!txt || txt.length > 200) continue;
+                        const hasDur = durRe.test(txt);
+                        const hasSrc = txt.includes('소스') || txt.includes('source');
+                        if (hasDur && hasSrc) {
+                            return 'video_completed';
+                        }
+                    }
+                    // 구 UI 호환 (혹시 되돌아갈 경우)
                     for (const el of allEls) {
                         const txt = (el.innerText || '').trim();
                         if ((txt.includes('설명 동영상') || txt.includes('요약 동영상') ||
