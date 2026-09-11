@@ -31,6 +31,46 @@ def yt_client():
     return build("youtube", "v3", credentials=creds)
 
 
+def _yellow_frame_ratio(im) -> float:
+    """현행 템플릿(`overlay_text`)이 그리는 테두리 프레임의 비율."""
+    w, h = im.size
+    px = im.load()
+
+    def yellowish(p) -> bool:
+        r, g, b = p
+        return r > 190 and g > 160 and b < 120
+
+    band = max(2, min(w, h) // 120)
+    pts, hit = 0, 0
+    for x in range(0, w, max(1, w // 200)):
+        for y in list(range(band)) + list(range(h - band, h)):
+            pts += 1
+            hit += yellowish(px[x, y])
+    for y in range(0, h, max(1, h // 200)):
+        for x in list(range(band)) + list(range(w - band, w)):
+            pts += 1
+            hit += yellowish(px[x, y])
+    return hit / max(pts, 1)
+
+
+def check_local_thumbnail(path) -> tuple[bool, str]:
+    """업로드 **전에** 로컬 썸네일 파일에 텍스트 오버레이가 있는지 본다.
+
+    9/08 사고(훅·제목·저자 없는 배경 그림 8편이 공개됨)는 올라간 뒤에야 발견됐다.
+    업로드 직전에 잡으면 사고 자체가 나지 않는다.
+
+    ⚠️ 판정은 현행 템플릿 기준이다 — 다른 방식으로 만든 썸네일은 오탐이 날 수 있으므로
+    **차단하지 말고 경고만** 할 것.
+    """
+    try:
+        from PIL import Image
+        im = Image.open(path).convert("RGB")
+    except Exception as e:  # noqa: BLE001
+        return True, f"확인 생략({str(e)[:40]})"   # 확인 불가 시 통과 처리
+    ratio = _yellow_frame_ratio(im)
+    return ratio > 0.5, f"템플릿 테두리 {ratio*100:.0f}%"
+
+
 def has_text_overlay(url: str) -> tuple[bool, str]:
     """썸네일에 텍스트 오버레이가 있는지 판정한다.
 
@@ -52,25 +92,7 @@ def has_text_overlay(url: str) -> tuple[bool, str]:
             im = Image.open(io.BytesIO(r.read())).convert("RGB")
     except Exception as e:  # noqa: BLE001
         return False, f"이미지 확인 실패: {str(e)[:50]}"
-
-    w, h = im.size
-    px = im.load()
-
-    def yellowish(p) -> bool:
-        r, g, b = p
-        return r > 190 and g > 160 and b < 120
-
-    band = max(2, min(w, h) // 120)          # 테두리 두께 추정
-    pts, hit = 0, 0
-    for x in range(0, w, max(1, w // 200)):   # 위/아래 가장자리
-        for y in list(range(band)) + list(range(h - band, h)):
-            pts += 1
-            hit += yellowish(px[x, y])
-    for y in range(0, h, max(1, h // 200)):   # 좌/우 가장자리
-        for x in list(range(band)) + list(range(w - band, w)):
-            pts += 1
-            hit += yellowish(px[x, y])
-    ratio = hit / max(pts, 1)
+    ratio = _yellow_frame_ratio(im)
     return ratio > 0.5, f"현행 템플릿 테두리 {ratio*100:.0f}%"
 
 

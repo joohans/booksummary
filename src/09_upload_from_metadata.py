@@ -47,6 +47,8 @@ class YouTubeUploader:
             raise ValueError("YouTube API 자격증명이 설정되지 않았습니다.")
         
         self.youtube = None
+        # 업로드 중 발견한 썸네일 이상 — 마지막 요약에서 한 번에 보여준다
+        self.thumbnail_warnings: list[tuple[str, str, str]] = []
         self._authenticate()
     
     def _authenticate(self):
@@ -510,9 +512,31 @@ class YouTubeUploader:
         return response
     
     def upload_thumbnail(self, video_id: str, thumbnail_path: str):
-        """썸네일 업로드 (재시도 포함)"""
+        """썸네일 업로드 (재시도 포함)
+
+        업로드 **전에** 텍스트 오버레이 유무를 확인한다 — 2026-09-08 에 훅·제목·저자가 없는
+        배경 그림만 올라간 8편(만세전~니코마코스)이 공개된 뒤에야 발견된 사고가 있었다.
+        API 응답의 `maxres` 키만 보면 "썸네일 있음"으로 통과하므로 잡히지 않는다.
+        """
         import time
-        
+
+        try:
+            sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
+            from verify_published import check_local_thumbnail  # noqa: PLC0415
+
+            ok, why = check_local_thumbnail(thumbnail_path)
+            if ok:
+                print(f"   🔎 썸네일 텍스트 확인 ({why})")
+            else:
+                # 현행 템플릿 기준 판정이라 다른 방식으로 만든 썸네일은 오탐이 날 수 있다.
+                # 업로드를 막지는 않고 경고만 남긴다.
+                print(f"   ⚠️ 썸네일에 텍스트 오버레이가 없어 보인다 ({why})")
+                print("      훅·책 제목·저자가 빠진 배경 그림만 올라갈 수 있다.")
+                print("      thumbnail_generator.overlay_text() 를 거쳤는지 확인할 것.")
+                self.thumbnail_warnings.append((video_id, Path(thumbnail_path).name, why))
+        except Exception as e:  # noqa: BLE001
+            print(f"   (썸네일 사전 확인 생략: {str(e)[:60]})")
+
         max_retries = 3
         retry = 0
         
@@ -1357,6 +1381,18 @@ def main():
         print("⏭️ 건너뛴 영상:")
         for item in skipped:
             print(f"   • {item['title']}")
+        print()
+
+    # 썸네일 이상은 묻혀서는 안 된다 — 9/08 에 8편이 반쪽 썸네일로 공개됐다
+    warns = getattr(uploader, "thumbnail_warnings", [])
+    if warns:
+        print("=" * 60)
+        print(f"⚠️ 썸네일 확인 필요 {len(warns)}건 — 텍스트 오버레이가 없어 보인다")
+        for vid, name, why in warns:
+            print(f"   • {name}  ({why})")
+            print(f"     https://studio.youtube.com/video/{vid}/edit")
+        print("   배경 그림만 올라갔다면 overlay_text() 로 텍스트를 얹어 다시 올릴 것")
+        print("=" * 60)
         print()
 
 
