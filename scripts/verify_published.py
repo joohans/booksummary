@@ -34,8 +34,17 @@ def yt_client():
 def has_text_overlay(url: str) -> tuple[bool, str]:
     """썸네일에 텍스트 오버레이가 있는지 판정한다.
 
-    `overlay_text()` 는 항상 **노란 테두리 프레임**을 그린다. 배경만 있는 썸네일에는 없다.
-    가장자리 픽셀의 노란색 비율로 본다 — 텍스트 자체를 OCR 하는 것보다 안정적이다.
+    ⚠️ **우리 파이프라인(`thumbnail_generator.overlay_text`)이 만든 썸네일에만 유효하다.**
+    그 함수는 항상 노란 테두리 프레임을 그리므로, 배경만 올라간 것과 확실히 갈린다
+    (실측: 텍스트 없음 0% / 있음 70~75%).
+
+    ⛔ **과거 영상에 적용하지 말 것.** 2026-09-11 에 채널 460편 전수 점검을 시도했다가
+    두 번 연속 오탐을 냈다:
+      1) 노란 테두리 기준 → Gems 시대의 **파란 프레임** 35편이 전부 "누락"으로 잡혔다
+      2) '상단의 흰 글씨' 기준으로 바꿔도 → 빨강·노랑 글씨이거나 중앙·하단 배치인
+         7편(종의 기원·목민심서·금병매·이반 일리치…)이 또 걸렸다
+    채널의 썸네일 스타일이 시기마다 달라 **자동 전수 검사는 성립하지 않는다.**
+    `--today` 로 갓 만든 편만 보는 용도로 쓴다.
     """
     try:
         from PIL import Image
@@ -62,7 +71,7 @@ def has_text_overlay(url: str) -> tuple[bool, str]:
             pts += 1
             hit += yellowish(px[x, y])
     ratio = hit / max(pts, 1)
-    return ratio > 0.5, f"노란 테두리 {ratio*100:.0f}%"
+    return ratio > 0.5, f"현행 템플릿 테두리 {ratio*100:.0f}%"
 
 
 def check(yt, vid: str) -> dict:
