@@ -235,8 +235,17 @@ def main() -> int:
         return 1
 
     out = ROOT / f"data/search_demand_{args.provider}.json"
-    out.write_text(json.dumps(demand, ensure_ascii=False, indent=1))
-    print(f"\n저장: {out.relative_to(ROOT)}")
+    # ⚠️ 덮어쓰지 말고 누적한다 — 2026-09-12 에 한 건만 재던 실행이
+    #    기존 13건을 통째로 날린 적이 있다(커밋 직전 발견). 같은 제목은 최신값으로 갱신.
+    merged = {}
+    if out.exists():
+        try:
+            merged = json.loads(out.read_text())
+        except json.JSONDecodeError:
+            merged = {}
+    merged.update(demand)
+    out.write_text(json.dumps(merged, ensure_ascii=False, indent=1))
+    print(f"\n저장: {out.relative_to(ROOT)} (누적 {len(merged)}건)")
 
     if not args.validate:
         print(f"\n{'제목':30}{unit:>16}")
