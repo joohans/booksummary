@@ -47,29 +47,43 @@ def main() -> int:
     if not titles:
         return ap.error("--titles 또는 --file 필요")
 
-    passed, dropped = [], []
+    # 교과서 수요 신호 — 제안어에 이것이 보이면 매년 반복되는 학교 수요다
+    SCHOOL = ("미래엔", "비상", "창비", "천재", "지학사", "해냄", "동아",
+              "내신", "수특", "수능특강", "중1", "중2", "중3", "고1", "고2", "고3", "세특")
+
+    rows = []
     print(f"{len(titles)}건 스크리닝 (무료 · 자동완성)\n")
-    print(f"{'제목':24}{'제안':>4}{'책':>4}{'각색':>5}{'비율':>7}  판정")
-    print("-" * 78)
     for t in titles:
         d = sup.demand(t)
+        school = [k for k in SCHOOL if any(k in s for s in d["sug_sample"])]
         if d["n_sug"] == 0:
             v = "⛔ 제안어 0 (측정불가)"
         elif d.get("n_adapt", 0) > d["n_book"]:
-            v = f"⛔ 각색물 우세 ({d['sug_sample'][:2]})"
+            v = "⛔ 각색물 우세"
+        elif school:
+            v = f"★ 교과서 신호 ({'·'.join(school[:3])})"
+        elif d["n_sug"] >= 10:
+            v = "✅ 제안어 상한 — 수요 신호"
         elif d["book_ratio"] >= args.min_ratio:
-            v = "✅ 계량 대상"
+            v = "✅ 의도 깨끗"
         else:
-            v = "⚠️ 의도 약함"
-        (passed if v.startswith("✅") else dropped).append(t)
-        print(f"{t:24}{d['n_sug']:>4}{d['n_book']:>4}{d.get('n_adapt',0):>5}{d['book_ratio']:>7.2f}  {v}")
+            v = "⚠️ 판단 필요"
+        rows.append((t, d, v))
+        # ★ 제안어는 **항상** 찍는다. 비율만 보고 자르면 판정이 뒤집힌다(2026-09-13 실측)
+        print(f"■ {t}  (제안 {d['n_sug']} · 책 {d['n_book']} · 각색 {d.get('n_adapt', 0)} · "
+              f"비율 {d['book_ratio']:.2f})  {v}")
+        if d["sug_sample"]:
+            print(f"   {' / '.join(d['sug_sample'])}")
         time.sleep(args.sleep)
 
-    print(f"\n통과 {len(passed)} / 탈락 {len(dropped)}")
-    if passed:
-        print("\n계량 명령:")
-        print('  .venv/bin/python scripts/measure_search_supply.py --titles ' +
-              " ".join(f'"{t}"' for t in passed))
+    drop = [t for t, _, v in rows if v.startswith("⛔")]
+    keep = [t for t, _, v in rows if not v.startswith("⛔")]
+    print(f"\n⛔ 명백한 탈락 {len(drop)} / 나머지 {len(keep)}")
+    print("⚠️ 「나머지」는 통과가 아니라 **눈으로 볼 대상**이다 — 비율이 낮아도 제안어가 좋으면 살린다")
+    if keep:
+        print("\n수요 계량(다음 단계):")
+        print("  .venv/bin/python scripts/measure_search_demand.py --provider naver --titles " +
+              " ".join(f'"{t}"' for t in keep))
     return 0
 
 

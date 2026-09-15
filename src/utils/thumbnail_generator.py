@@ -68,13 +68,21 @@ def _load_font(paths: list[str], size: int) -> ImageFont.FreeTypeFont:
 
 def _build_flux_prompt(image_prompt: str) -> str:
     """Flux용 최종 프롬프트: 순수 배경 이미지 (텍스트 없음)"""
+    # ★ 스타일은 **맨 앞**에 둔다 (2026-09-15 실측).
+    #   뒤에 붙이면 무시되고, `NOT anime` 같은 부정어도 듣지 않는다
+    #   (애니풍 1회 + 워터마크 「KEAR3」 1회 발생). 「운영전」 재생성이 통한 이유는
+    #   호출자가 스타일을 프롬프트 앞머리에 직접 써 넣었기 때문이다.
     return (
-        f"{image_prompt} "
+        "Traditional hand-painted illustration on textured mulberry paper, "
+        "visible ink brush strokes and paper grain, muted pigment washes, "
+        "fine ink pen linework, painterly soft edges, flat depth. "
+        f"Subject: {image_prompt}. "
         "YouTube thumbnail, 16:9 widescreen. "
         "Left side darker for text overlay area. "
-        "Blue geometric accent lines on frame edges (#1A73E8). "
-        "Cinematic lighting. Soft watercolor + fine ink pen style. "
-        "NO text, NO letters, NO watermark, NOT photorealistic."
+        # ⛔ 「Blue geometric accent lines」 를 뺐다(2026-09-15) — 스타일을 앞머리로 옮기자
+        #    지시가 강해져 화면에 큰 파란 삼각형으로 그려졌다. 기존 편들에선 거의 반영되지
+        #    않던 장식이라 잃는 것이 없다
+        "Clean artwork, plain surfaces, no signboards."
     )
 
 
