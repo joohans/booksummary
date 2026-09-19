@@ -430,7 +430,9 @@ ssh GPU 'ps -eo cmd | grep -c "^/home/jsong/render_venv/bin/python"'
 
 - **영상**: `output/{표준제목}_{kr/en}.mp4`
 - **메타데이터**: `output/{표준제목}_{kr/en}.metadata.json`
-- **썸네일**: `output/{책제목}_thumbnail_{언어}.jpg`
+- **썸네일**: `output/{표준제목}_{kr/en}_thumbnail_{ko/en}.jpg`
+  - ⚠️ **영상 파일 stem 과 반드시 일치해야 합니다.** 업로드 스크립트가 이 이름만 찾습니다.
+    한글 제목으로 저장하면 찾지 못하고 무드 이미지가 대신 올라갑니다 (2026-09-19 실측)
 
 ### ⚠️ 썸네일은 반드시 텍스트 합성까지 하세요
 
@@ -842,8 +844,8 @@ Summary 파일 생성 시 메타데이터(책 제목, 저자, 설명 라인)는 
 
 PNG 파일을 `output/` 폴더에 위치시키고 JPG로 변환합니다.
 
-- 한글: `{책제목}_thumbnail_ko.jpg`
-- 영어: `{책제목}_thumbnail_en.jpg`
+- 한글: `{표준제목}_kr_thumbnail_ko.jpg` (예: `Aunt_Suni_kr_thumbnail_ko.jpg`)
+- 영어: `{표준제목}_en_thumbnail_en.jpg`
 
 **참고:** Summary 오디오는 자동으로 생성되며 `{책제목}_summary_{언어}.mp3` 형식으로 저장됩니다.
 
@@ -903,7 +905,9 @@ python src/08_create_and_preview_videos.py \
 - **Summary 오디오**: `assets/audio/{책제목}_summary_{언어}.mp3` (자동 생성)
 - **NotebookLM 비디오**: `assets/video/{책제목}_notebooklm_{언어}.{확장자}` (선택사항)
 - **생성된 영상**: `output/{책제목}_review_with_summary_{언어}.mp4`
-- **썸네일**: `output/{책제목}_thumbnail_{언어}.jpg`
+- **썸네일**: `output/{표준제목}_{kr/en}_thumbnail_{ko/en}.jpg`
+  - ⚠️ **영상 파일 stem 과 반드시 일치해야 합니다.** 업로드 스크립트가 이 이름만 찾습니다.
+    한글 제목으로 저장하면 찾지 못하고 무드 이미지가 대신 올라갑니다 (2026-09-19 실측)
 - **메타데이터**: `output/{책제목}_review_with_summary_{언어}.metadata.json` (timestamp 자동 포함)
 
 **영상 구성:**

@@ -39,6 +39,16 @@ from PIL import Image, ImageDraw, ImageFont
 import io
 
 FLUX_SERVER = os.getenv("FLUX_SERVER_URL", "http://192.168.0.150:9001")
+
+
+def _english_title(book_title: str) -> str:
+    """책 제목을 영문으로 바꾼다. 매핑이 없으면 입력을 그대로 돌려준다."""
+    try:
+        sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+        from src.utils.translations import translate_book_title
+        return translate_book_title(book_title) or book_title
+    except Exception:
+        return book_title
 FLUX_TIMEOUT = int(os.getenv("FLUX_TIMEOUT", "120"))
 
 # 폰트 경로 (우선순위 순)
@@ -248,9 +258,14 @@ def generate_thumbnail(
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    safe_title = re.sub(r'[^\w가-힣]', '_', book_title).strip('_')
+    # ⚠️ 파일명은 반드시 영상 파일 stem 과 맞춘다.
+    # 업로드 스크립트(09_upload_from_metadata.py)는 output/{영상 stem}_thumbnail_{ko|en}.jpg
+    # 만 찾는다. 한글 제목으로 저장하면 찾지 못하고 mood_001.jpg 가 대신 올라간다
+    # (2026-09-19 「순이 삼촌」 실측). 영상 stem 은 {영문제목}_{kr|en} 이다.
+    safe_title = re.sub(r'[^\w]', '_', _english_title(book_title)).strip('_')
     lang_suffix = "ko" if language in ("ko", "kr") else "en"
-    output_path = output_dir / f"{safe_title}_thumbnail_{lang_suffix}.jpg"
+    video_suffix = "kr" if language in ("ko", "kr") else "en"
+    output_path = output_dir / f"{safe_title}_{video_suffix}_thumbnail_{lang_suffix}.jpg"
 
     if output_path.exists() and not force:
         print(f"썸네일 이미 존재: {output_path}")
