@@ -387,6 +387,37 @@ python scripts/run_full_pipeline_from_downloads.py \
 - ★ `_build_flux_prompt()` 는 이제 **스타일 → 피사체 → 레이아웃** 순으로 조립합니다
 - ⛔ `Blue geometric accent lines` 지시도 제거했습니다 — 스타일을 앞으로 옮기자 화면에 **큰 파란 삼각형**으로 그려졌습니다. 기존 편들에선 거의 반영되지 않던 장식이라 잃는 것이 없습니다
 
+### ⚠️ Flux 서버는 `/health` 가 통과해도 죽어 있을 수 있습니다
+
+2026-09-23 「최척전」 썸네일 생성이 `150:9002` 에서 500 으로 막혔습니다.
+
+```
+{"error": "Expected all tensors to be on the same device, but found at least two
+ devices, cpu and cuda:0! (when checking argument for argument mat1 ...)"}
+```
+
+- ⛔ 같은 서버의 `/health` 는 `{"status":"ok","model":"FLUX.1-schnell","loaded":true}` 로
+  **정상이라 답합니다.** 모델이 로드돼 있다는 뜻일 뿐 생성이 된다는 뜻이 아닙니다
+- ★ **포트를 고를 때 `/health` 의 `model` 필드만 보지 말고 `/generate` 를 한 번 때려 보세요**
+- ★ 대체 인스턴스가 **`150:9010`** 에 있습니다. `FLUX_SERVER_URL` 환경변수로 갈아탑니다
+  (`thumbnail_generator.py` 기본값은 `9001` 하드코딩이라 그대로 쓰면 404):
+
+```bash
+FLUX_SERVER_URL=http://192.168.0.150:9010 FLUX_TIMEOUT=300 \
+  .venv/bin/python src/utils/thumbnail_generator.py --title-ko ... --language ko
+```
+
+### ★★ 가짜 낙관은 **오버레이 전 배경에서** 지우세요
+
+Flux 는 수묵화풍 프롬프트에 좌하단 낙관(빨간 도장)을 습관적으로 찍습니다.
+완성본에서 지우려다 두 번 망쳤습니다 — 세로 보간의 **아래 경계가 「핵심요약」 노란 글자를 읽어**
+노란 줄무늬가 위로 번졌습니다.
+
+- ★ **같은 seed 로 Flux 를 다시 호출해 배경만 받고**, 글자가 없는 상태에서 지운 뒤
+  `overlay_text()` 를 직접 부르세요. 생성 함수가 `seed` 를 받으므로 재현이 공짜입니다
+- ⚠️ 낙관은 눈대중보다 **위로 더 걸쳐** 있습니다. 위 경계가 낙관에 물리면 잔상이 남습니다
+- ⛔ `NO seal stamp` / `NO red stamp` 는 듣지 않습니다(Flux 부정어 무시와 같은 문제)
+
 ### ⚠️ 제목이 실재 지명·역명과 겹치면 수요 지표가 통째로 오염됩니다
 
 2026-09-12 「사평역」(임철우)은 수요 3,670회/월로 후보 상위였지만, 착수 직전 검색어를 쪼개
