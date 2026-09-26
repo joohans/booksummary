@@ -320,6 +320,7 @@ async def _wait_for_page_ready(page, timeout_ms: int = 60000) -> bool:
                 const keywords = [
                     '새로 만들기', 'Create new',
                     '노트북 만들기', 'New notebook',
+                    '새 노트북',
                     '소스 추가', 'Add source'
                 ];
                 const btns = document.querySelectorAll('button');
@@ -372,6 +373,9 @@ async def _click_new_notebook(page) -> bool:
         clicked = await _js_find_and_click(page, "노트북 만들기", "button")
     if not clicked:
         clicked = await _js_find_and_click(page, "New notebook", "button")
+    if not clicked:
+        # 2026-09-26 UI 변경: 버튼 문구가 「새 노트북」
+        clicked = await _js_find_and_click(page, "새 노트북", "button")
     if not clicked:
         # CSS 셀렉터 폴백
         btn = await _find_button(page, [
