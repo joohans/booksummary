@@ -99,6 +99,16 @@ async def run(title: str, part_nums: list[int]) -> None:
                 results[part_title] = None
                 continue
             await page.wait_for_timeout(5000)
+            # 2026-09-29: 「노트북 생성 중…」(URL /notebook/creating) 이 수십 초 걸릴 때가 있다 → 실제 노트북 URL 이 될 때까지 대기
+            for _ in range(24):
+                if "/creating" not in page.url:
+                    break
+                await page.wait_for_timeout(5000)
+            if "/creating" in page.url:
+                await na._screenshot(page, "err_creating_stuck")
+                print(f"FAIL {part_title}: 노트북 생성이 끝나지 않음(120초)", flush=True)
+                results[part_title] = None
+                continue
             na._save_notebook_url(part_title, page.url)
             print(f"노트북 URL: {page.url[:70]}", flush=True)
 
