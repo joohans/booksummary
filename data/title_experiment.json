@@ -1,0 +1,189 @@
+{
+  "seed": 20261003,
+  "applied": "2026-10-03",
+  "pre": [
+    "2026-09-03",
+    "2026-09-30"
+  ],
+  "videos": {
+    "sV-qZxxjR0g": {
+      "group": "treat",
+      "pair": "A",
+      "book": "종의 기원",
+      "plot_demand": 370,
+      "original_title": "[핵심 요약] 종의 기원: 정유정 (The Good Son · AI 심층 분석)",
+      "pre": {
+        "search": 139,
+        "total": 152,
+        "plot_terms": 0,
+        "top_terms": [
+          [
+            "종의기원",
+            56
+          ],
+          [
+            "종의 기원",
+            19
+          ],
+          [
+            "정유정 종의기원",
+            11
+          ],
+          [
+            "종의기원 정유정",
+            11
+          ],
+          [
+            "종의 기원 정유정",
+            6
+          ],
+          [
+            "정유정 작가",
+            1
+          ]
+        ]
+      },
+      "new_title": "[핵심 요약] 종의 기원 줄거리·해설: 정유정 (The Good Son · AI 심층 분석)"
+    },
+    "L8FLJWGj7GE": {
+      "group": "treat",
+      "pair": "B",
+      "book": "인간 실격",
+      "plot_demand": 1010,
+      "original_title": "[핵심 요약] 인간 실격: 다자이 오사무 (No Longer Human · AI 심층 분석)",
+      "pre": {
+        "search": 13,
+        "total": 15,
+        "plot_terms": 0,
+        "top_terms": [
+          [
+            "다자이 오사무",
+            2
+          ],
+          [
+            "인간실격",
+            1
+          ],
+          [
+            "인간실격 리뷰",
+            1
+          ]
+        ]
+      },
+      "new_title": "[핵심 요약] 인간 실격 줄거리·해설: 다자이 오사무 (No Longer Human · AI 심층 분석)"
+    },
+    "iZ9rOZbLxxM": {
+      "group": "treat",
+      "pair": "C",
+      "book": "멋진 신세계",
+      "plot_demand": 260,
+      "original_title": "[핵심 요약] 멋진 신세계 핵심 정리 | [Summary] Brave New World Book Review",
+      "pre": {
+        "search": 5,
+        "total": 7,
+        "plot_terms": 0,
+        "top_terms": []
+      },
+      "new_title": "[핵심 요약] 멋진 신세계 줄거리·핵심 정리 | [Summary] Brave New World Book Review"
+    },
+    "yRAkdoT_cXA": {
+      "group": "control",
+      "pair": "A",
+      "book": "살인자의 기억법",
+      "plot_demand": 190,
+      "original_title": "[핵심 요약] 살인자의 기억법: 김영하 (The Killer's Memorandum · AI 심층 분석)",
+      "pre": {
+        "search": 108,
+        "total": 109,
+        "plot_terms": 0,
+        "top_terms": [
+          [
+            "살인자의 기억법",
+            57
+          ],
+          [
+            "살인자의 기억법 책",
+            5
+          ],
+          [
+            "살인자의 기억법 결말 해석",
+            4
+          ],
+          [
+            "살인자의 기억법 해석",
+            4
+          ],
+          [
+            "살인자의 기억법 결말",
+            3
+          ],
+          [
+            "살인자의 기억법 결말포함",
+            1
+          ],
+          [
+            "킬러의 기억",
+            1
+          ]
+        ]
+      }
+    },
+    "K8MIWCe30D8": {
+      "group": "control",
+      "pair": "B",
+      "book": "노인과 바다",
+      "plot_demand": 1930,
+      "original_title": "[핵심 요약] 노인과 바다: 어니스트 헤밍웨이 (The Old Man and the Sea · AI 심층 분석)",
+      "pre": {
+        "search": 5,
+        "total": 7,
+        "plot_terms": 0,
+        "top_terms": []
+      }
+    },
+    "BnovpY5w5ZM": {
+      "group": "control",
+      "pair": "C",
+      "book": "이반 일리치의 죽음",
+      "plot_demand": 110,
+      "original_title": "[핵심 요약] 이반 일리치의 죽음 핵심 정리 레프 톨스토이 | [Summary] The_Death_of_Ivan_Ilyich Book Review",
+      "pre": {
+        "search": 20,
+        "total": 20,
+        "plot_terms": 0,
+        "top_terms": [
+          [
+            "이반 일리치의 죽음",
+            9
+          ],
+          [
+            "이반일리치",
+            1
+          ],
+          [
+            "이반일리치의 죽음",
+            1
+          ]
+        ]
+      }
+    },
+    "8r4Mn3Vxdc8": {
+      "group": "control",
+      "pair": "-",
+      "book": "미드나잇 라이브러리",
+      "plot_demand": 90,
+      "original_title": "[핵심 요약] 미드나잇 라이브러리: 매트 헤이그 (The Midnight Library · AI 심층 분석)",
+      "pre": {
+        "search": 3,
+        "total": 3,
+        "plot_terms": 0,
+        "top_terms": [
+          [
+            "미드나잇 라이브러리",
+            2
+          ]
+        ]
+      }
+    }
+  }
+}

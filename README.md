@@ -91,6 +91,11 @@ pip install -r requirements.txt
 .venv/bin/python scripts/measure_search_demand.py --provider naver --file candidates.txt
 .venv/bin/python scripts/measure_search_demand.py --titles "만세전" "수난이대"   # trends(키 불필요)
 .venv/bin/python scripts/measure_search_demand.py --validate   # 성숙 표본으로 지표 검증
+
+# 4) 제목 실험 — 제목에 「줄거리」를 넣으면 「책 + 줄거리」 검색을 더 받는가 (2026-10-03 시작, 판독 11/03)
+.venv/bin/python scripts/title_experiment.py plan       # 배정·바뀔 제목 미리보기
+.venv/bin/python scripts/title_experiment.py measure    # 사전 28일 대 사후 28일 비교
+.venv/bin/python scripts/title_experiment.py rollback   # 처치군 제목 원복 (원래 제목은 data/title_experiment.json)
 ```
 
 ### 수요 축 (`measure_search_demand.py`)
