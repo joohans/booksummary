@@ -235,6 +235,8 @@ python scripts/notebooklm_automator.py --login
 
 브라우저가 열리면 Google 계정으로 로그인하세요. 세션은 `~/.notebooklm_session.json`에 저장됩니다.
 
+원샷 실행 중 로그인 세션이 만료되면 `python3 scripts/nlm_login_window.py`로 재로그인 창을 띄워 VNC로 로그인합니다. 원샷과 같은 Playwright 설정·프로필(`~/.notebooklm_chrome_profile`)을 쓰며, 로그인 완료를 감지하면 창을 닫습니다. (chrome 바이너리를 직접 띄우면 페이지가 로딩에서 멈춥니다.)
+
 #### 기본 사용법
 
 ```bash
