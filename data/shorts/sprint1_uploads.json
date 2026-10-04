@@ -1,0 +1,91 @@
+{
+  "videos": {
+    "the_stranger": {
+      "id": "d5il9-JbWOo",
+      "book": "이방인",
+      "publish_at": "2026-10-07T09:00:00Z",
+      "long_video": "vBO4lEBmaao"
+    },
+    "demian": {
+      "id": "Y8H9oVgspUM",
+      "book": "데미안",
+      "publish_at": "2026-10-05T09:00:00Z",
+      "long_video": "C1VeauTb6gs"
+    },
+    "little_prince": {
+      "id": "VwsblAtvI9k",
+      "book": "어린왕자",
+      "publish_at": "2026-10-05T09:30:00Z",
+      "long_video": "u0xMFDDJjcw"
+    },
+    "human_acts": {
+      "id": "kj6LucIQzGg",
+      "book": "소년이 온다",
+      "publish_at": "2026-10-06T09:00:00Z",
+      "long_video": "CKxgZBvMC90"
+    },
+    "pride_and_prejudice": {
+      "id": "gdnLjhO3BPg",
+      "book": "오만과 편견",
+      "publish_at": "2026-10-06T09:30:00Z",
+      "long_video": "mnV6ksIipOw"
+    },
+    "zorba": {
+      "id": "E4-7puW_ER0",
+      "book": "그리스인 조르바",
+      "publish_at": "2026-10-07T09:30:00Z",
+      "long_video": "X0Yabczy3e8"
+    },
+    "gatsby": {
+      "id": "HHD4dEVa1xo",
+      "book": "위대한 개츠비",
+      "publish_at": "2026-10-08T09:00:00Z",
+      "long_video": "2_aMxbFUBLQ"
+    },
+    "chunhyang": {
+      "id": "nY2or3hq8sQ",
+      "book": "춘향전",
+      "publish_at": "2026-10-08T09:30:00Z",
+      "long_video": "0tDnOpU_4Vs"
+    },
+    "moon_sixpence": {
+      "id": "W7bDyN1hHjc",
+      "book": "달과 6펜스",
+      "publish_at": "2026-10-09T09:00:00Z",
+      "long_video": "8BsLf6aSQ3g"
+    },
+    "dwarf": {
+      "id": "fww309q_eCk",
+      "book": "난장이가 쏘아올린 작은 공",
+      "publish_at": "2026-10-09T09:30:00Z",
+      "long_video": "gnDFPNAH7s0"
+    }
+  },
+  "baseline": {
+    "date": "2026-10-04",
+    "long_views": {
+      "C1VeauTb6gs": 420,
+      "u0xMFDDJjcw": 47,
+      "CKxgZBvMC90": 19,
+      "mnV6ksIipOw": 71,
+      "vBO4lEBmaao": 40,
+      "X0Yabczy3e8": 59,
+      "2_aMxbFUBLQ": 55,
+      "0tDnOpU_4Vs": 24,
+      "8BsLf6aSQ3g": 13,
+      "gnDFPNAH7s0": 22
+    }
+  },
+  "playlist": "PLQ1yUQ83apHI",
+  "replaced": {
+    "demian": "lEXGnKFa6BU",
+    "little_prince": "CfRFguZFkYQ",
+    "human_acts": "_0fTGbvpwZg",
+    "pride_and_prejudice": "LpzH5oZsSRI",
+    "zorba": "OnxxyNm6jNs",
+    "gatsby": "BoIvZBgADCE",
+    "chunhyang": "MjFtBHDBUfY",
+    "moon_sixpence": "GmHjql7yi-I",
+    "dwarf": "wLwB9DNsLkQ"
+  }
+}

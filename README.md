@@ -98,6 +98,20 @@ pip install -r requirements.txt
 .venv/bin/python scripts/title_experiment.py rollback   # 처치군 제목 원복 (원래 제목은 data/title_experiment.json)
 ```
 
+### Shorts — 「<책> 줄거리 1분 요약」 (2026-10-04 시작)
+
+설정 파일(`data/shorts/<스프린트>.json`)에 책·연결할 본편·문장별 [대사, 장면 묘사]를 적고 실행한다.
+문장마다 TTS 를 따로 만들어 자막과 음성을 정확히 맞추고, **Whisper 받아쓰기로 원고와 대조**해
+어긋난 문장은 자동 재생성한다(OpenAI 한국어 TTS 가 가끔 문장을 망가뜨린다).
+
+```bash
+.venv/bin/python scripts/make_shorts.py data/shorts/sprint1.json all      # tts·images·frames·thumb·render·meta
+.venv/bin/python scripts/make_shorts.py data/shorts/sprint1.json tts --only gatsby   # 단계·편 단위 실행
+.venv/bin/python scripts/upload_shorts.py data/shorts/sprint1.json --start 2026-10-05 --per-day 2 --dry-run
+```
+- 이미지(Flux 세로)는 반드시 눈으로 검수 — 건물 정면에 간판·한자, 하단에 가짜 서명, 가끔 시대착오가 생긴다
+- 렌더는 GPU150 ffmpeg(loudnorm -16 LUFS). 업로드는 비공개 + 예약, 커스텀 썸네일, 재생목록 「1분 줄거리 (Shorts)」
+
 ### 수요 축 (`measure_search_demand.py`)
 
 공급(경쟁)만으로는 **"공급이 적어서 경쟁이 낮은 것"과 "아무도 안 찾아서 경쟁이 낮은 것"** 을
