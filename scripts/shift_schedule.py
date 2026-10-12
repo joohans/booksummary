@@ -11,18 +11,39 @@
     .venv/bin/python scripts/shift_schedule.py --from 2026-10-02 --days 3 --apply
 """
 import argparse
+import glob
+import re
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 
 KST = timezone(timedelta(hours=9))
 STATUS_KEYS = ("privacyStatus", "embeddable", "license", "publicStatsViewable", "selfDeclaredMadeForKids")
+ROOT = Path(__file__).resolve().parent.parent
+RECORD_FILES = ["history.md", "output/upload_log.json", "output/upload_log.csv", "data/*.json", "data/**/*.json"]
 
 
-def scheduled_videos(yt):
-    ch = yt.channels().list(part="contentDetails", mine=True).execute()
-    pl = ch["items"][0]["contentDetails"]["relatedPlaylists"]["uploads"]
+def record_ids() -> set[str]:
+    """로컬 기록(history·업로드 로그·data)에 적힌 영상 ID 후보."""
+    ids = set()
+    for pattern in RECORD_FILES:
+        for f in glob.glob(str(ROOT / pattern), recursive=True):
+            text = Path(f).read_text(errors="ignore")
+            ids |= set(re.findall(r"(?:watch\?v=|youtu\.be/|[`\"'])([A-Za-z0-9_-]{11})(?=[`\"'&\s)]|$)", text))
+    return ids
+
+
+def channel_video_ids(yt) -> list[str]:
+    """채널 영상 ID 전체.
+
+    업로드 재생목록은 **같은 33편을 빼고 그 자리를 중복 항목으로 채워** 돌려준다
+    (529항목 / 고유 496, 4회 반복해도 동일, 2026-10-12). 빠진 편에는 예약 편도 있어
+    재배치에서 누락됐다 → 로컬 기록의 ID 를 합치고 videos.list 로 우리 채널 것만 남긴다.
+    """
+    ch = yt.channels().list(part="id,contentDetails", mine=True).execute()["items"][0]
+    pl = ch["contentDetails"]["relatedPlaylists"]["uploads"]
     ids, tok = [], None
     while True:
         r = yt.playlistItems().list(part="contentDetails", playlistId=pl,
@@ -31,14 +52,22 @@ def scheduled_videos(yt):
         tok = r.get("nextPageToken")
         if not tok:
             break
-    # 업로드 재생목록 페이지 응답에 같은 영상이 중복으로 섞인다(529항목 / 고유 496, 2026-10-12)
     ids = list(dict.fromkeys(ids))
+    extra = sorted(record_ids() - set(ids))
+    for i in range(0, len(extra), 50):
+        r = yt.videos().list(part="snippet", id=",".join(extra[i:i + 50])).execute()
+        ids += [v["id"] for v in r["items"] if v["snippet"]["channelId"] == ch["id"]]
+    return ids
+
+
+def scheduled_videos(yt):
+    ids = channel_video_ids(yt)
     out = []
     for i in range(0, len(ids), 50):
         r = yt.videos().list(part="status,snippet", id=",".join(ids[i:i + 50])).execute()
         for v in r["items"]:
             pa = v["status"].get("publishAt")
-            if pa:
+            if pa and v["status"]["privacyStatus"] != "public":
                 out.append((pa, v["snippet"]["title"], v["id"], v))
     out.sort()
     return out
