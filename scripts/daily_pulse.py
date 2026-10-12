@@ -46,6 +46,12 @@ NEW_CRITERIA = {
     "qhsDCfqoXJc": "니코마코스 윤리학 (1,530/872 = 1.75)",
     "Nf9mDPedLq8": "B사감과 러브레터 (800/851 = 0.94)",
 }
+# 관찰 — 선정 기준 밖에서 이상치로 나온 편. 유입 경로가 어떻게 바뀌는지 본다.
+# 위버멘쉬: 10/08 공개, 첫 2일 91회(본편 최고) 중 구독자 70·추천 17·검색 2 (2026-10-12 분석).
+# 갈림길: 검색 유입이 붙는가, 구독자 유입이 꺼지는가.
+WATCH = {
+    "OcgNWzoPTQE": "위버멘쉬 (최근 베스트셀러, 구독자 유입형)",
+}
 
 
 def clients():
@@ -138,7 +144,7 @@ def search_terms(ya, out, today, days, label):
 
 def tracked(ya, yt, out, today):
     """실험 편 / 대조군 추적 — 공개된 것만 나온다."""
-    ids = {**EXPERIMENT, **CONTROL, **NEW_CRITERIA}
+    ids = {**EXPERIMENT, **CONTROL, **NEW_CRITERIA, **WATCH}
     meta = {}
     out.append("## 선정 기준 실험 추적\n")
     try:
@@ -151,7 +157,7 @@ def tracked(ya, yt, out, today):
 
     out.append("| 편 | 상태 | 조회 | 좋아요 | 댓글 | 평균 시청률 |")
     out.append("|---|---|---:|---:|---:|---:|")
-    for group, label in ((NEW_CRITERIA, "새기준"), (EXPERIMENT, "실험"), (CONTROL, "대조")):
+    for group, label in ((WATCH, "관찰"), (NEW_CRITERIA, "새기준"), (EXPERIMENT, "실험"), (CONTROL, "대조")):
         for vid, name in group.items():
             m = meta.get(vid)
             if not m:
@@ -176,6 +182,33 @@ def tracked(ya, yt, out, today):
                 f"{int(s.get('likeCount', 0)):,} | {int(s.get('commentCount', 0)):,} | {avp} |"
             )
     out.append("")
+    watch_sources(ya, meta, out, today)
+
+
+def watch_sources(ya, meta, out, today):
+    """관찰 편의 유입 경로 — 누적 vs 최근 7일. 경로 비중이 옮겨 가는지 본다."""
+    for vid, name in WATCH.items():
+        m = meta.get(vid)
+        if not m or m["status"]["privacyStatus"] != "public":
+            continue
+        out.append(f"**[관찰] {name} 유입 경로**\n")
+        out.append("| 경로 | 누적 | 최근 7일 |")
+        out.append("|---|---:|---:|")
+        spans = (m["snippet"]["publishedAt"][:10], (today - timedelta(days=7)).isoformat())
+        cols = []
+        for start in spans:
+            rows = q(
+                ya,
+                startDate=start,
+                endDate=today.isoformat(),
+                dimensions="insightTrafficSourceType",
+                metrics="views",
+                filters=f"video=={vid}",
+            )
+            cols.append(dict(rows))
+        for src in sorted(cols[0], key=lambda k: -cols[0][k]):
+            out.append(f"| {src} | {cols[0][src]:,} | {cols[1].get(src, 0):,} |")
+        out.append("")
 
 
 def actions(yt, out, today):
