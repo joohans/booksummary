@@ -519,6 +519,24 @@ FLUX_SERVER_URL=http://192.168.0.150:9010 .venv/bin/python src/utils/thumbnail_g
 .venv/bin/python scripts/shift_schedule.py --from 2026-10-02 --days 3 --exclude <새영상ID> --apply
 ```
 
+### 🗓 공개 간격 바꾸기 (예약 전체 재배치)
+
+순서는 그대로 두고 날짜만 N일 간격으로 다시 깝니다. 2026-10-12부터 **매일 18:00 KST** 공개입니다.
+고전소설 시리즈 설명란의 「◀ 이전 / ▶ 다음 (M/D)」 날짜도 함께 고칩니다
+(`data/series_gojeon.json` 의 date 는 별도로 맞추세요).
+
+```bash
+# 미리보기
+.venv/bin/python scripts/respace_schedule.py --start 2026-10-13 --every 1
+# 실제 적용
+.venv/bin/python scripts/respace_schedule.py --start 2026-10-13 --every 1 --apply
+```
+
+- ⚠️ `videos.update(part="status")` 는 **빠진 필드를 기본값으로 덮어씁니다.**
+  두 스크립트 모두 `STATUS_KEYS`(embeddable·publicStatsViewable·license 포함)를 실어 보냅니다
+- ⚠️ 태그에 **쉼표**를 넣지 마세요. YouTube 태그 구분자라 목록 전체가 1개로 뭉개집니다
+  (업로드 스크립트가 쉼표를 공백으로 바꿉니다)
+
 ### 📤 4단계: YouTube 업로드 (선택사항)
 
 영상이 준비되었으면 YouTube에 업로드할 수 있습니다:

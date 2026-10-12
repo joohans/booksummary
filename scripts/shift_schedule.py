@@ -17,6 +17,7 @@ from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 
 KST = timezone(timedelta(hours=9))
+STATUS_KEYS = ("privacyStatus", "embeddable", "license", "publicStatsViewable", "selfDeclaredMadeForKids")
 
 
 def scheduled_videos(yt):
@@ -72,14 +73,11 @@ def main() -> None:
     # 뒤에서부터 밀어야 날짜 충돌이 생기지 않는다
     print()
     for cur, new, title, vid, v in reversed(targets):
-        body = {
-            "id": vid,
-            "status": {
-                "privacyStatus": v["status"]["privacyStatus"],
-                "publishAt": new.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-                "selfDeclaredMadeForKids": v["status"].get("selfDeclaredMadeForKids", False),
-            },
-        }
+        # 빠진 필드는 기본값으로 덮어쓰이므로(embeddable·publicStatsViewable 이 False 가 됐다)
+        # 기존 status 를 전부 실어 보낸다
+        status = {k: v["status"][k] for k in STATUS_KEYS if k in v["status"]}
+        status["publishAt"] = new.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        body = {"id": vid, "status": status}
         yt.videos().update(part="status", body=body).execute()
         print(f"  ✅ {new:%m/%d %a} {title[:42]}")
     print(f"\n{len(targets)}편 이동 완료")

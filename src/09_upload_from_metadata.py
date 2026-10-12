@@ -118,6 +118,12 @@ class YouTubeUploader:
                 tag = re.sub(r'[<>&"\'\n\r\t]', '', tag).strip()
                 if not tag:
                     continue
+            # 쉼표는 YouTube 태그 구분자라 목록 전체가 엉뚱한 태그 1개로 뭉개진다
+            # (「서울, 1964년 겨울」 업로드에서 26개 → 1개, 2026-10-12)
+            if ',' in tag:
+                tag = re.sub(r'\s*,\s*', ' ', tag).strip()
+            if tag in cleaned_tags:
+                continue
             cleaned_tags.append(tag)
 
         # YouTube: 전체 키워드 길이 < 500자. 공백 포함 태그는 따옴표로 감싸져 2자를 더 먹는다
