@@ -31,6 +31,8 @@ def scheduled_videos(yt):
         tok = r.get("nextPageToken")
         if not tok:
             break
+    # 업로드 재생목록 페이지 응답에 같은 영상이 중복으로 섞인다(529항목 / 고유 496, 2026-10-12)
+    ids = list(dict.fromkeys(ids))
     out = []
     for i in range(0, len(ids), 50):
         r = yt.videos().list(part="status,snippet", id=",".join(ids[i:i + 50])).execute()
