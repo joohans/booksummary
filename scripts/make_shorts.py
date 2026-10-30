@@ -42,6 +42,8 @@ KEY = str(Path.home() / ".ssh" / "aws-jsong.pem")
 REMOTE = "booksummary_render/shorts"
 W, H = 1080, 1920
 GAP = 0.25  # 문장 사이 쉼(초)
+# 제목 띠 y — 채널 Shorts 칸이 영상 프레임 위아래를 잘라 y=150 제목이 반쯤 잘렸다(10/04). 설정 title_y 로 바꾼다
+TITLE_Y = 150
 
 
 def shorts_dir(slug):
@@ -151,7 +153,10 @@ def step_images(cfg, s):
         if out.exists():
             continue
         prompt = f"{cfg['style']}. Setting: {s['era']}. Scene: {scene}."
-        seed = int(hashlib.md5(f"{s['slug']}-{i}".encode()).hexdigest()[:8], 16)
+        # reseed: {"문장번호": n} — 글자가 붙은 컷을 같은 프롬프트로 다른 seed 에서 다시 뽑는다
+        r = s.get("reseed", {}).get(str(i))
+        key = f"{s['slug']}-{i}" + (f"-r{r}" if r else "")
+        seed = int(hashlib.md5(key.encode()).hexdigest()[:8], 16)
         for attempt in range(3):
             try:
                 r = requests.post(FLUX, json={"prompt": prompt, "width": 1088, "height": 1920,
@@ -206,8 +211,10 @@ def step_frames(cfg, s):
 
         ov = Image.new("RGBA", (W, H), (0, 0, 0, 0))
         od = ImageDraw.Draw(ov)
-        for y in range(0, 470):  # 상단 제목 띠 그라데이션
-            od.line([(0, y), (W, y)], fill=(0, 0, 0, int(215 * (1 - y / 470) ** 0.8)))
+        ty0 = cfg.get("title_y", TITLE_Y)
+        band = ty0 + 320
+        for y in range(0, band):  # 상단 제목 띠 그라데이션
+            od.line([(0, y), (W, y)], fill=(0, 0, 0, int(215 * (1 - y / band) ** 0.8)))
         # 하단 그라데이션 — Flux 가 찍는 가짜 서명·URL 을 가리고, Shorts UI 영역과도 겹친다(2026-10-04 실측)
         for y in range(H - 480, H):
             a = (y - (H - 480)) / 480
@@ -220,9 +227,9 @@ def step_frames(cfg, s):
         while dr.textlength(title, font=tf) > W - 120 and tf.size > 60:
             tf = _load_font(FONT_PATHS_BOLD, tf.size - 6)
         tw = dr.textlength(title, font=tf)
-        outlined(dr, ((W - tw) / 2, 150), title, tf, (255, 255, 255), 4)
+        outlined(dr, ((W - tw) / 2, ty0), title, tf, (255, 255, 255), 4)
         sub = "1분 요약 · 결말 포함"
-        outlined(dr, ((W - dr.textlength(sub, font=f_sub)) / 2, 150 + tf.size + 28), sub, f_sub, (255, 214, 0), 3)
+        outlined(dr, ((W - dr.textlength(sub, font=f_sub)) / 2, ty0 + tf.size + 28), sub, f_sub, (255, 214, 0), 3)
 
         # 자막: Shorts UI(하단 ~380px·우측 버튼)를 피해 화면 중하단
         cap = wrap(dr, line, f_cap, W - 200)
@@ -336,7 +343,7 @@ def step_meta(cfg, s):
             f"▶ 전체 해설 본편: {url}\n\n"
             f"#{s['book'].replace(' ', '')} #{s['book'].replace(' ', '')}줄거리 #책요약 #줄거리 #shorts")
     tags = [s["book"], f"{s['book']} 줄거리", f"{s['book']} 요약", f"{s['book']} 결말", f"{s['book']} 해설",
-            s["author"], "줄거리", "책요약", "1분 요약", "고전 소설", "shorts"]
+            s["author"], "줄거리", "책요약", "1분 요약", s.get("genre", "고전 소설"), "shorts"]
     meta = {"video_path": f"output/shorts/{s['slug']}.mp4", "title": title, "description": desc, "tags": tags,
             "language": "ko", "long_video": s["long_video"], "book": s["book"]}
     out.write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")

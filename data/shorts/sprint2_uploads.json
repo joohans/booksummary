@@ -1,0 +1,45 @@
+{
+  "videos": {
+    "autobiography_of_red": {
+      "id": "pvZhdMpgxxY",
+      "book": "빨강의 자서전",
+      "publish_at": "2026-10-31T09:00:00Z",
+      "long_video": "R2Jq2REYuT0"
+    },
+    "sunan_idae": {
+      "id": "U_cHUrgiFYw",
+      "book": "수난이대",
+      "publish_at": "2026-10-31T09:30:00Z",
+      "long_video": "hsItetT2Ntk"
+    },
+    "wildflower_in_memory": {
+      "id": "Up1IhOWXJaA",
+      "book": "기억 속의 들꽃",
+      "publish_at": "2026-11-01T09:00:00Z",
+      "long_video": "KeWoDPb-Cd8"
+    },
+    "ong_gojip": {
+      "id": "JGdVKRGagr8",
+      "book": "옹고집전",
+      "publish_at": "2026-11-01T09:30:00Z",
+      "long_video": "HT8LTkdY0Xg"
+    },
+    "aunt_suni": {
+      "id": "RtnxLC-VDwg",
+      "book": "순이 삼촌",
+      "publish_at": "2026-11-02T09:00:00Z",
+      "long_video": "AU6rHiUO1gk"
+    }
+  },
+  "baseline": {
+    "date": "2026-10-30",
+    "long_views": {
+      "R2Jq2REYuT0": 126,
+      "hsItetT2Ntk": 80,
+      "KeWoDPb-Cd8": 33,
+      "HT8LTkdY0Xg": 1,
+      "AU6rHiUO1gk": 31
+    }
+  },
+  "playlist": "PLQ1yUQ83apHI"
+}
