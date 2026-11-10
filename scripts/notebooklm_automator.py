@@ -402,10 +402,25 @@ async def _click_new_notebook(page) -> bool:
 
 async def _open_url_modal(page) -> bool:
     """'웹사이트 및 YouTube URL' 모달 열기"""
+    # 2026-11-10 UI 변경: 새 노트북은 소스 추가 모달이 자동으로 열려 있다 → 「웹사이트」부터 누른다
+    if await _js_find_and_click(page, "웹사이트", "button"):
+        await page.wait_for_timeout(1500)
+        return True
+
     await _clear_overlays(page)
 
-    # 경로 A: "+ 소스 추가" 버튼 클릭 → "웹사이트" 선택
+    # 경로 A: "+ 소스 추가" 버튼 클릭 → "웹사이트" 선택 (2026-11-10~ 버튼 문구는 「+ 소스」)
     clicked = await _js_find_and_click(page, "소스 추가", "button")
+    if not clicked:
+        clicked = await page.evaluate("""
+            (() => {
+                for (const b of document.querySelectorAll('button')) {
+                    const lines = (b.innerText || '').trim().split('\\n').map(s => s.trim());
+                    if (lines[lines.length - 1] === '소스' && b.offsetParent !== null) { b.click(); return true; }
+                }
+                return false;
+            })()
+        """)
     if clicked:
         await page.wait_for_timeout(2000)
         # "웹사이트" 버튼 클릭
